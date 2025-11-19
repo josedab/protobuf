@@ -541,3 +541,8 @@ with info about your project (name and website) so we can add an entry for you.
 
     *   Website: https://github.com/aep-dev
     *   Extensions: 1264-1274
+
+1.  Protocol Buffers Built-in Validation
+
+    *   Website: https://github.com/protocolbuffers/protobuf
+    *   Extensions: 50000-50099

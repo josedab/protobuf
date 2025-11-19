@@ -1,0 +1,382 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+// Test file for validation constraints.
+
+syntax = "proto2";
+
+package protobuf_unittest;
+
+option java_package = "com.google.protobuf";
+option java_outer_classname = "UnittestValidate";
+
+import "google/protobuf/validate.proto";
+
+// Test message with string validation rules.
+message StringValidationTest {
+  // String with length constraints
+  optional string username = 1 [
+    (google.protobuf.validate) = {
+      string: {
+        min_len: 3
+        max_len: 20
+        pattern: "^[a-z0-9_]+$"
+      }
+    }
+  ];
+
+  // String with email validation
+  optional string email = 2 [
+    (google.protobuf.validate) = {
+      string: {
+        email: true
+        max_len: 255
+      }
+    }
+  ];
+
+  // String with URI validation
+  optional string website = 3 [
+    (google.protobuf.validate) = {
+      string: {
+        uri: true
+        ignore_empty: true
+      }
+    }
+  ];
+
+  // String with UUID validation
+  optional string request_id = 4 [
+    (google.protobuf.validate) = {
+      string: {
+        uuid: true
+      }
+    }
+  ];
+
+  // String with hostname validation
+  optional string hostname = 5 [
+    (google.protobuf.validate) = {
+      string: {
+        hostname: true
+      }
+    }
+  ];
+
+  // String with IP address validation
+  optional string ip_address = 6 [
+    (google.protobuf.validate) = {
+      string: {
+        ip: true
+      }
+    }
+  ];
+
+  // String with in/not_in validation
+  optional string status = 7 [
+    (google.protobuf.validate) = {
+      string: {
+        in: ["active", "inactive", "pending"]
+      }
+    }
+  ];
+
+  // String with prefix/suffix validation
+  optional string prefixed_string = 8 [
+    (google.protobuf.validate) = {
+      string: {
+        prefix: "prefix_"
+        suffix: "_suffix"
+      }
+    }
+  ];
+}
+
+// Test message with numeric validation rules.
+message NumericValidationTest {
+  // Int32 with range validation
+  optional int32 age = 1 [
+    (google.protobuf.validate) = {
+      int32: {
+        gte: 0
+        lte: 150
+      }
+    }
+  ];
+
+  // Int64 with range validation
+  optional int64 timestamp_ms = 2 [
+    (google.protobuf.validate) = {
+      int64: {
+        gt: 0
+      }
+    }
+  ];
+
+  // UInt32 with const validation
+  optional uint32 version = 3 [
+    (google.protobuf.validate) = {
+      uint32: {
+        const: 1
+      }
+    }
+  ];
+
+  // Float with range validation
+  optional float percentage = 4 [
+    (google.protobuf.validate) = {
+      float: {
+        gte: 0.0
+        lte: 100.0
+      }
+    }
+  ];
+
+  // Double with range validation
+  optional double latitude = 5 [
+    (google.protobuf.validate) = {
+      double: {
+        gte: -90.0
+        lte: 90.0
+      }
+    }
+  ];
+
+  // Int32 with in/not_in validation
+  optional int32 priority = 6 [
+    (google.protobuf.validate) = {
+      int32: {
+        in: [1, 2, 3, 4, 5]
+        not_in: [0]
+      }
+    }
+  ];
+}
+
+// Test message with repeated field validation.
+message RepeatedValidationTest {
+  // Repeated strings with count constraints
+  repeated string tags = 1 [
+    (google.protobuf.validate) = {
+      repeated: {
+        min_items: 1
+        max_items: 10
+        unique: true
+      }
+    }
+  ];
+
+  // Repeated with item validation
+  repeated string emails = 2 [
+    (google.protobuf.validate) = {
+      repeated: {
+        max_items: 5
+        items: {
+          string: {
+            email: true
+          }
+        }
+      }
+    }
+  ];
+
+  // Repeated numbers with validation
+  repeated int32 scores = 3 [
+    (google.protobuf.validate) = {
+      repeated: {
+        min_items: 0
+        max_items: 100
+        items: {
+          int32: {
+            gte: 0
+            lte: 100
+          }
+        }
+      }
+    }
+  ];
+}
+
+// Test message with map field validation.
+message MapValidationTest {
+  // Map with count constraints
+  map<string, string> metadata = 1 [
+    (google.protobuf.validate) = {
+      map: {
+        min_pairs: 1
+        max_pairs: 50
+      }
+    }
+  ];
+
+  // Map with key validation
+  map<string, int32> scores_by_name = 2 [
+    (google.protobuf.validate) = {
+      map: {
+        keys: {
+          string: {
+            min_len: 1
+            max_len: 100
+          }
+        }
+        values: {
+          int32: {
+            gte: 0
+          }
+        }
+      }
+    }
+  ];
+}
+
+// Test message with nested message validation.
+message NestedValidationTest {
+  // Required nested message
+  optional StringValidationTest required_user = 1 [
+    (google.protobuf.validate) = {
+      message: {
+        required: true
+      }
+    }
+  ];
+
+  // Optional nested message (validated if present)
+  optional NumericValidationTest optional_stats = 2;
+
+  // Nested message with skip
+  optional RepeatedValidationTest skipped = 3 [
+    (google.protobuf.validate) = {
+      message: {
+        skip: true
+      }
+    }
+  ];
+}
+
+// Test message with enum validation.
+message EnumValidationTest {
+  enum Status {
+    UNKNOWN = 0;
+    ACTIVE = 1;
+    INACTIVE = 2;
+    DELETED = 3;
+  }
+
+  // Enum with defined_only validation
+  optional Status status = 1 [
+    (google.protobuf.validate) = {
+      enum: {
+        defined_only: true
+        not_in: [0]  // UNKNOWN not allowed
+      }
+    }
+  ];
+
+  // Enum with in validation
+  optional Status allowed_status = 2 [
+    (google.protobuf.validate) = {
+      enum: {
+        in: [1, 2]  // Only ACTIVE or INACTIVE
+      }
+    }
+  ];
+}
+
+// Test message with bytes validation.
+message BytesValidationTest {
+  // Bytes with length constraints
+  optional bytes data = 1 [
+    (google.protobuf.validate) = {
+      bytes: {
+        min_len: 1
+        max_len: 1024
+      }
+    }
+  ];
+
+  // Bytes with IP validation
+  optional bytes ip_bytes = 2 [
+    (google.protobuf.validate) = {
+      bytes: {
+        ip: true
+      }
+    }
+  ];
+}
+
+// Test message with bool validation.
+message BoolValidationTest {
+  // Bool with const validation
+  optional bool must_accept_terms = 1 [
+    (google.protobuf.validate) = {
+      bool: {
+        const: true
+      }
+    }
+  ];
+}
+
+// Comprehensive test message combining multiple validation types.
+message UserProfile {
+  optional string id = 1 [
+    (google.protobuf.validate) = {
+      string: {
+        uuid: true
+      }
+    }
+  ];
+
+  optional string username = 2 [
+    (google.protobuf.validate) = {
+      string: {
+        min_len: 3
+        max_len: 30
+        pattern: "^[a-zA-Z0-9_]+$"
+      }
+    }
+  ];
+
+  optional string email = 3 [
+    (google.protobuf.validate) = {
+      string: {
+        email: true
+      }
+    }
+  ];
+
+  optional int32 age = 4 [
+    (google.protobuf.validate) = {
+      int32: {
+        gte: 13
+        lte: 120
+      }
+    }
+  ];
+
+  repeated string interests = 5 [
+    (google.protobuf.validate) = {
+      repeated: {
+        max_items: 20
+        unique: true
+        items: {
+          string: {
+            min_len: 1
+            max_len: 50
+          }
+        }
+      }
+    }
+  ];
+
+  optional StringValidationTest contact_info = 6 [
+    (google.protobuf.validate) = {
+      message: {
+        required: true
+      }
+    }
+  ];
+}

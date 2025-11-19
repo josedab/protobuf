@@ -1,0 +1,548 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+// Built-in validation constraints for Protocol Buffers.
+// This file defines validation rules that can be applied to proto fields
+// to generate automatic validation code in all target languages.
+
+syntax = "proto2";
+
+package google.protobuf;
+
+option java_package = "com.google.protobuf";
+option java_outer_classname = "ValidateProto";
+option java_multiple_files = true;
+option cc_enable_arenas = true;
+option go_package = "google.golang.org/protobuf/types/known/validatepb";
+option objc_class_prefix = "GPB";
+option csharp_namespace = "Google.Protobuf.Validation";
+
+import "google/protobuf/descriptor.proto";
+
+// FieldRules is a container for all field-level validation rules.
+// It encapsulates type-specific rules and applies to any field type.
+message FieldRules {
+  // Type-specific rules
+  oneof type {
+    // Scalar type rules
+    FloatRules float = 1;
+    DoubleRules double = 2;
+    Int32Rules int32 = 3;
+    Int64Rules int64 = 4;
+    UInt32Rules uint32 = 5;
+    UInt64Rules uint64 = 6;
+    SInt32Rules sint32 = 7;
+    SInt64Rules sint64 = 8;
+    Fixed32Rules fixed32 = 9;
+    Fixed64Rules fixed64 = 10;
+    SFixed32Rules sfixed32 = 11;
+    SFixed64Rules sfixed64 = 12;
+    BoolRules bool = 13;
+    StringRules string = 14;
+    BytesRules bytes = 15;
+
+    // Complex type rules
+    EnumRules enum = 16;
+    RepeatedRules repeated = 18;
+    MapRules map = 19;
+
+    // Well-known type rules
+    AnyRules any = 20;
+    DurationRules duration = 21;
+    TimestampRules timestamp = 22;
+  }
+
+  // Message-level rules (applies when field is a message type)
+  optional MessageRules message = 17;
+}
+
+// FloatRules describes the constraints applied to `float` values.
+message FloatRules {
+  // Must equal this value exactly.
+  optional float const = 1;
+  // Must be less than this value.
+  optional float lt = 2;
+  // Must be less than or equal to this value.
+  optional float lte = 3;
+  // Must be greater than this value.
+  optional float gt = 4;
+  // Must be greater than or equal to this value.
+  optional float gte = 5;
+  // Must be one of these values.
+  repeated float in = 6;
+  // Must not be one of these values.
+  repeated float not_in = 7;
+  // Skip validation if the field is not set (for optional fields).
+  optional bool ignore_empty = 8;
+}
+
+// DoubleRules describes the constraints applied to `double` values.
+message DoubleRules {
+  // Must equal this value exactly.
+  optional double const = 1;
+  // Must be less than this value.
+  optional double lt = 2;
+  // Must be less than or equal to this value.
+  optional double lte = 3;
+  // Must be greater than this value.
+  optional double gt = 4;
+  // Must be greater than or equal to this value.
+  optional double gte = 5;
+  // Must be one of these values.
+  repeated double in = 6;
+  // Must not be one of these values.
+  repeated double not_in = 7;
+  // Skip validation if the field is not set.
+  optional bool ignore_empty = 8;
+}
+
+// Int32Rules describes the constraints applied to `int32` values.
+message Int32Rules {
+  // Must equal this value exactly.
+  optional int32 const = 1;
+  // Must be less than this value.
+  optional int32 lt = 2;
+  // Must be less than or equal to this value.
+  optional int32 lte = 3;
+  // Must be greater than this value.
+  optional int32 gt = 4;
+  // Must be greater than or equal to this value.
+  optional int32 gte = 5;
+  // Must be one of these values.
+  repeated int32 in = 6;
+  // Must not be one of these values.
+  repeated int32 not_in = 7;
+  // Skip validation if the field is not set.
+  optional bool ignore_empty = 8;
+}
+
+// Int64Rules describes the constraints applied to `int64` values.
+message Int64Rules {
+  // Must equal this value exactly.
+  optional int64 const = 1;
+  // Must be less than this value.
+  optional int64 lt = 2;
+  // Must be less than or equal to this value.
+  optional int64 lte = 3;
+  // Must be greater than this value.
+  optional int64 gt = 4;
+  // Must be greater than or equal to this value.
+  optional int64 gte = 5;
+  // Must be one of these values.
+  repeated int64 in = 6;
+  // Must not be one of these values.
+  repeated int64 not_in = 7;
+  // Skip validation if the field is not set.
+  optional bool ignore_empty = 8;
+}
+
+// UInt32Rules describes the constraints applied to `uint32` values.
+message UInt32Rules {
+  // Must equal this value exactly.
+  optional uint32 const = 1;
+  // Must be less than this value.
+  optional uint32 lt = 2;
+  // Must be less than or equal to this value.
+  optional uint32 lte = 3;
+  // Must be greater than this value.
+  optional uint32 gt = 4;
+  // Must be greater than or equal to this value.
+  optional uint32 gte = 5;
+  // Must be one of these values.
+  repeated uint32 in = 6;
+  // Must not be one of these values.
+  repeated uint32 not_in = 7;
+  // Skip validation if the field is not set.
+  optional bool ignore_empty = 8;
+}
+
+// UInt64Rules describes the constraints applied to `uint64` values.
+message UInt64Rules {
+  // Must equal this value exactly.
+  optional uint64 const = 1;
+  // Must be less than this value.
+  optional uint64 lt = 2;
+  // Must be less than or equal to this value.
+  optional uint64 lte = 3;
+  // Must be greater than this value.
+  optional uint64 gt = 4;
+  // Must be greater than or equal to this value.
+  optional uint64 gte = 5;
+  // Must be one of these values.
+  repeated uint64 in = 6;
+  // Must not be one of these values.
+  repeated uint64 not_in = 7;
+  // Skip validation if the field is not set.
+  optional bool ignore_empty = 8;
+}
+
+// SInt32Rules describes the constraints applied to `sint32` values.
+message SInt32Rules {
+  // Must equal this value exactly.
+  optional sint32 const = 1;
+  // Must be less than this value.
+  optional sint32 lt = 2;
+  // Must be less than or equal to this value.
+  optional sint32 lte = 3;
+  // Must be greater than this value.
+  optional sint32 gt = 4;
+  // Must be greater than or equal to this value.
+  optional sint32 gte = 5;
+  // Must be one of these values.
+  repeated sint32 in = 6;
+  // Must not be one of these values.
+  repeated sint32 not_in = 7;
+  // Skip validation if the field is not set.
+  optional bool ignore_empty = 8;
+}
+
+// SInt64Rules describes the constraints applied to `sint64` values.
+message SInt64Rules {
+  // Must equal this value exactly.
+  optional sint64 const = 1;
+  // Must be less than this value.
+  optional sint64 lt = 2;
+  // Must be less than or equal to this value.
+  optional sint64 lte = 3;
+  // Must be greater than this value.
+  optional sint64 gt = 4;
+  // Must be greater than or equal to this value.
+  optional sint64 gte = 5;
+  // Must be one of these values.
+  repeated sint64 in = 6;
+  // Must not be one of these values.
+  repeated sint64 not_in = 7;
+  // Skip validation if the field is not set.
+  optional bool ignore_empty = 8;
+}
+
+// Fixed32Rules describes the constraints applied to `fixed32` values.
+message Fixed32Rules {
+  // Must equal this value exactly.
+  optional fixed32 const = 1;
+  // Must be less than this value.
+  optional fixed32 lt = 2;
+  // Must be less than or equal to this value.
+  optional fixed32 lte = 3;
+  // Must be greater than this value.
+  optional fixed32 gt = 4;
+  // Must be greater than or equal to this value.
+  optional fixed32 gte = 5;
+  // Must be one of these values.
+  repeated fixed32 in = 6;
+  // Must not be one of these values.
+  repeated fixed32 not_in = 7;
+  // Skip validation if the field is not set.
+  optional bool ignore_empty = 8;
+}
+
+// Fixed64Rules describes the constraints applied to `fixed64` values.
+message Fixed64Rules {
+  // Must equal this value exactly.
+  optional fixed64 const = 1;
+  // Must be less than this value.
+  optional fixed64 lt = 2;
+  // Must be less than or equal to this value.
+  optional fixed64 lte = 3;
+  // Must be greater than this value.
+  optional fixed64 gt = 4;
+  // Must be greater than or equal to this value.
+  optional fixed64 gte = 5;
+  // Must be one of these values.
+  repeated fixed64 in = 6;
+  // Must not be one of these values.
+  repeated fixed64 not_in = 7;
+  // Skip validation if the field is not set.
+  optional bool ignore_empty = 8;
+}
+
+// SFixed32Rules describes the constraints applied to `sfixed32` values.
+message SFixed32Rules {
+  // Must equal this value exactly.
+  optional sfixed32 const = 1;
+  // Must be less than this value.
+  optional sfixed32 lt = 2;
+  // Must be less than or equal to this value.
+  optional sfixed32 lte = 3;
+  // Must be greater than this value.
+  optional sfixed32 gt = 4;
+  // Must be greater than or equal to this value.
+  optional sfixed32 gte = 5;
+  // Must be one of these values.
+  repeated sfixed32 in = 6;
+  // Must not be one of these values.
+  repeated sfixed32 not_in = 7;
+  // Skip validation if the field is not set.
+  optional bool ignore_empty = 8;
+}
+
+// SFixed64Rules describes the constraints applied to `sfixed64` values.
+message SFixed64Rules {
+  // Must equal this value exactly.
+  optional sfixed64 const = 1;
+  // Must be less than this value.
+  optional sfixed64 lt = 2;
+  // Must be less than or equal to this value.
+  optional sfixed64 lte = 3;
+  // Must be greater than this value.
+  optional sfixed64 gt = 4;
+  // Must be greater than or equal to this value.
+  optional sfixed64 gte = 5;
+  // Must be one of these values.
+  repeated sfixed64 in = 6;
+  // Must not be one of these values.
+  repeated sfixed64 not_in = 7;
+  // Skip validation if the field is not set.
+  optional bool ignore_empty = 8;
+}
+
+// BoolRules describes the constraints applied to `bool` values.
+message BoolRules {
+  // Must equal this value.
+  optional bool const = 1;
+}
+
+// StringRules describes the constraints applied to `string` values.
+message StringRules {
+  // Must equal this value exactly.
+  optional string const = 1;
+  // Must have at least this many characters (Unicode code points).
+  optional uint64 min_len = 2;
+  // Must have at most this many characters (Unicode code points).
+  optional uint64 max_len = 3;
+  // Must have at least this many bytes.
+  optional uint64 min_bytes = 4;
+  // Must have at most this many bytes.
+  optional uint64 max_bytes = 5;
+  // Must match this regular expression pattern.
+  optional string pattern = 6;
+  // Must have this prefix.
+  optional string prefix = 7;
+  // Must have this suffix.
+  optional string suffix = 8;
+  // Must contain this substring.
+  optional string contains = 9;
+  // Must not contain this substring.
+  optional string not_contains = 10;
+  // Must be one of these values.
+  repeated string in = 11;
+  // Must not be one of these values.
+  repeated string not_in = 12;
+
+  // Well-known string format validations
+  // Must be a valid email address.
+  optional bool email = 13;
+  // Must be a valid hostname (RFC 1123).
+  optional bool hostname = 14;
+  // Must be a valid IP address (v4 or v6).
+  optional bool ip = 15;
+  // Must be a valid IPv4 address.
+  optional bool ipv4 = 16;
+  // Must be a valid IPv6 address.
+  optional bool ipv6 = 17;
+  // Must be a valid URI (RFC 3986).
+  optional bool uri = 18;
+  // Must be a valid URI reference.
+  optional bool uri_ref = 19;
+  // Must be a valid UUID (RFC 4122).
+  optional bool uuid = 20;
+
+  // Skip validation if empty string.
+  optional bool ignore_empty = 21;
+}
+
+// BytesRules describes the constraints applied to `bytes` values.
+message BytesRules {
+  // Must equal this value exactly.
+  optional bytes const = 1;
+  // Must have at least this many bytes.
+  optional uint64 min_len = 2;
+  // Must have at most this many bytes.
+  optional uint64 max_len = 3;
+  // Must match this regular expression pattern.
+  optional string pattern = 4;
+  // Must have this prefix.
+  optional bytes prefix = 5;
+  // Must have this suffix.
+  optional bytes suffix = 6;
+  // Must contain this byte sequence.
+  optional bytes contains = 7;
+  // Must be one of these values.
+  repeated bytes in = 8;
+  // Must not be one of these values.
+  repeated bytes not_in = 9;
+
+  // Well-known byte format validations
+  // Must be a valid IP address (v4 or v6).
+  optional bool ip = 10;
+  // Must be a valid IPv4 address.
+  optional bool ipv4 = 11;
+  // Must be a valid IPv6 address.
+  optional bool ipv6 = 12;
+
+  // Skip validation if empty.
+  optional bool ignore_empty = 13;
+}
+
+// EnumRules describes the constraints applied to `enum` values.
+message EnumRules {
+  // Must equal this value.
+  optional int32 const = 1;
+  // Require that the value be a defined value in the enum.
+  optional bool defined_only = 2;
+  // Must be one of these values.
+  repeated int32 in = 3;
+  // Must not be one of these values.
+  repeated int32 not_in = 4;
+}
+
+// MessageRules describes the constraints applied to message fields.
+message MessageRules {
+  // The field must be set (not null).
+  optional bool required = 1;
+  // Skip validation of nested message fields.
+  optional bool skip = 2;
+}
+
+// RepeatedRules describes the constraints applied to `repeated` fields.
+message RepeatedRules {
+  // Must have at least this many items.
+  optional uint64 min_items = 1;
+  // Must have at most this many items.
+  optional uint64 max_items = 2;
+  // All items must be unique.
+  optional bool unique = 3;
+  // Validation rules applied to each item.
+  optional FieldRules items = 4;
+  // Skip validation if the repeated field is empty.
+  optional bool ignore_empty = 5;
+}
+
+// MapRules describes the constraints applied to `map` fields.
+message MapRules {
+  // Must have at least this many key-value pairs.
+  optional uint64 min_pairs = 1;
+  // Must have at most this many key-value pairs.
+  optional uint64 max_pairs = 2;
+  // All keys must be unique (always true for maps, but validates items).
+  optional bool no_sparse = 3;
+  // Validation rules applied to map keys.
+  optional FieldRules keys = 4;
+  // Validation rules applied to map values.
+  optional FieldRules values = 5;
+  // Skip validation if the map is empty.
+  optional bool ignore_empty = 6;
+}
+
+// AnyRules describes constraints applied to google.protobuf.Any fields.
+message AnyRules {
+  // The field must be set (not null).
+  optional bool required = 1;
+  // Type URL must be one of these values.
+  repeated string in = 2;
+  // Type URL must not be one of these values.
+  repeated string not_in = 3;
+}
+
+// DurationRules describes constraints applied to google.protobuf.Duration fields.
+message DurationRules {
+  // The field must be set.
+  optional bool required = 1;
+  // Must equal this value exactly.
+  optional google.protobuf.Duration const = 2;
+  // Must be less than this duration.
+  optional google.protobuf.Duration lt = 3;
+  // Must be less than or equal to this duration.
+  optional google.protobuf.Duration lte = 4;
+  // Must be greater than this duration.
+  optional google.protobuf.Duration gt = 5;
+  // Must be greater than or equal to this duration.
+  optional google.protobuf.Duration gte = 6;
+  // Must be one of these durations.
+  repeated google.protobuf.Duration in = 7;
+  // Must not be one of these durations.
+  repeated google.protobuf.Duration not_in = 8;
+}
+
+// TimestampRules describes constraints applied to google.protobuf.Timestamp fields.
+message TimestampRules {
+  // The field must be set.
+  optional bool required = 1;
+  // Must equal this value exactly.
+  optional google.protobuf.Timestamp const = 2;
+  // Must be less than this timestamp.
+  optional google.protobuf.Timestamp lt = 3;
+  // Must be less than or equal to this timestamp.
+  optional google.protobuf.Timestamp lte = 4;
+  // Must be greater than this timestamp.
+  optional google.protobuf.Timestamp gt = 5;
+  // Must be greater than or equal to this timestamp.
+  optional google.protobuf.Timestamp gte = 6;
+  // Must be before the current time (evaluated at validation time).
+  optional bool lt_now = 7;
+  // Must be after the current time (evaluated at validation time).
+  optional bool gt_now = 8;
+  // Duration to add to now for lt_now/gt_now constraints.
+  optional google.protobuf.Duration within = 9;
+}
+
+// MessageConstraint defines cross-field validation rules for messages.
+message MessageConstraint {
+  // CEL expression for cross-field validation.
+  // Must evaluate to true for validation to pass.
+  optional string cel = 1;
+  // Error message to display when validation fails.
+  optional string error = 2;
+}
+
+// Placeholder messages for Duration and Timestamp that would be imported
+// from well-known types in actual implementation.
+message Duration {
+  optional int64 seconds = 1;
+  optional int32 nanos = 2;
+}
+
+message Timestamp {
+  optional int64 seconds = 1;
+  optional int32 nanos = 2;
+}
+
+// ValidationResult contains the results of validation.
+message ValidationResult {
+  // Whether validation passed.
+  optional bool is_valid = 1;
+  // List of validation errors if validation failed.
+  repeated ValidationError errors = 2;
+}
+
+// ValidationError represents a single validation error.
+message ValidationError {
+  // Field path that failed validation (e.g., "user.email").
+  optional string field = 1;
+  // Human-readable error message.
+  optional string message = 2;
+  // The validation rule that failed.
+  optional string rule = 3;
+}
+
+// Extension to FieldOptions for field-level validation rules.
+extend google.protobuf.FieldOptions {
+  optional FieldRules validate = 50000;
+}
+
+// Extension to MessageOptions for message-level validation rules.
+extend google.protobuf.MessageOptions {
+  optional MessageConstraint message_validate = 50001;
+}
+
+// Extension to FileOptions for file-level validation settings.
+extend google.protobuf.FileOptions {
+  // Disable validation generation for all messages in this file.
+  optional bool disable_validation = 50002;
+  // Fail fast on first validation error (vs. collect all errors).
+  optional bool fail_fast = 50003;
+}
