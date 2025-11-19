@@ -312,6 +312,155 @@ TEST_F(CppGeneratorTest, CtypeOnExtensionTest) {
       "extensions");
 }
 
+TEST_F(CppGeneratorTest, ModularOutputBasic) {
+  CreateTempFile("foo.proto",
+                 R"schema(
+    syntax = "proto2";
+    message Foo {
+      optional int32 bar = 1;
+    }
+    message Baz {
+      optional string qux = 1;
+    })schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir "
+      "--cpp_out=modular_output:$tmpdir foo.proto");
+
+  ExpectNoErrors();
+}
+
+TEST_F(CppGeneratorTest, ModularOutputWithNestedMessages) {
+  CreateTempFile("nested.proto",
+                 R"schema(
+    syntax = "proto2";
+    message Outer {
+      optional int32 value = 1;
+      message Inner {
+        optional string name = 2;
+      }
+      optional Inner inner = 3;
+    })schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir "
+      "--cpp_out=modular_output:$tmpdir nested.proto");
+
+  ExpectNoErrors();
+}
+
+TEST_F(CppGeneratorTest, ModularOutputWithEnums) {
+  CreateTempFile("enums.proto",
+                 R"schema(
+    syntax = "proto2";
+    enum Status {
+      UNKNOWN = 0;
+      ACTIVE = 1;
+      INACTIVE = 2;
+    }
+    message Request {
+      optional Status status = 1;
+    })schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir "
+      "--cpp_out=modular_output:$tmpdir enums.proto");
+
+  ExpectNoErrors();
+}
+
+TEST_F(CppGeneratorTest, ModularOutputWithDependencies) {
+  CreateTempFile("base.proto",
+                 R"schema(
+    syntax = "proto2";
+    message BaseMessage {
+      optional int32 id = 1;
+    })schema");
+
+  CreateTempFile("derived.proto",
+                 R"schema(
+    syntax = "proto2";
+    import "base.proto";
+    message DerivedMessage {
+      optional BaseMessage base = 1;
+      optional string name = 2;
+    })schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir "
+      "--cpp_out=modular_output:$tmpdir base.proto derived.proto");
+
+  ExpectNoErrors();
+}
+
+TEST_F(CppGeneratorTest, ModularOutputSingleMessage) {
+  CreateTempFile("single.proto",
+                 R"schema(
+    syntax = "proto2";
+    message OnlyOne {
+      optional int32 value = 1;
+    })schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir "
+      "--cpp_out=modular_output:$tmpdir single.proto");
+
+  ExpectNoErrors();
+}
+
+TEST_F(CppGeneratorTest, ModularOutputEmptyFile) {
+  CreateTempFile("empty.proto",
+                 R"schema(
+    syntax = "proto2";
+    // No messages, just an empty file
+    )schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir "
+      "--cpp_out=modular_output:$tmpdir empty.proto");
+
+  ExpectNoErrors();
+}
+
+TEST_F(CppGeneratorTest, ModularOutputWithServices) {
+  CreateTempFile("service.proto",
+                 R"schema(
+    syntax = "proto2";
+    message Request {
+      optional string query = 1;
+    }
+    message Response {
+      optional string result = 1;
+    }
+    service SearchService {
+      rpc Search(Request) returns (Response);
+    })schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir "
+      "--cpp_out=modular_output:$tmpdir service.proto");
+
+  ExpectNoErrors();
+}
+
+TEST_F(CppGeneratorTest, ModularOutputWithExtensions) {
+  CreateTempFile("extensions.proto",
+                 R"schema(
+    syntax = "proto2";
+    message Extendable {
+      extensions 100 to 199;
+    }
+    extend Extendable {
+      optional int32 my_extension = 100;
+    })schema");
+
+  RunProtoc(
+      "protocol_compiler --proto_path=$tmpdir "
+      "--cpp_out=modular_output:$tmpdir extensions.proto");
+
+  ExpectNoErrors();
+}
+
 
 }  // namespace
 }  // namespace cpp

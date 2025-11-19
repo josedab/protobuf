@@ -154,7 +154,57 @@ bool CppGenerator::GenerateImpl(const FileDescriptor* file,
     }
   }
 
-  {
+  // Generate headers based on whether modular output is enabled
+  if (file_options.modular_output) {
+    // Generate forward declarations header
+    {
+      auto output = absl::WrapUnique(generator_context->Open(
+          absl::StrCat(basename, "_fwd.pb.h")));
+      io::Printer p(output.get());
+      auto v = p.WithVars(CommonVars(file_options));
+      file_generator.GenerateForwardDeclarationHeader(&p);
+    }
+
+    // Generate individual message headers
+    int num_top_level = file_generator.NumTopLevelMessages();
+    for (int i = 0; i < num_top_level; ++i) {
+      // Get the message name for the filename
+      // We need to access the descriptor through the FileGenerator
+      std::string msg_filename = absl::StrCat(
+          basename, "/", "message_", i, ".pb.h");
+
+      auto output = absl::WrapUnique(generator_context->Open(msg_filename));
+      io::Printer p(output.get());
+      auto v = p.WithVars(CommonVars(file_options));
+      file_generator.GenerateModularMessageHeader(i, &p, "");
+    }
+
+    // Generate umbrella header for backward compatibility
+    {
+      auto output = absl::WrapUnique(
+          generator_context->Open(absl::StrCat(basename, ".pb.h")));
+
+      GeneratedCodeInfo annotations;
+      io::AnnotationProtoCollector<GeneratedCodeInfo> annotation_collector(
+          &annotations);
+      io::Printer::Options options;
+      if (file_options.annotate_headers) {
+        options.annotation_collector = &annotation_collector;
+      }
+
+      io::Printer p(output.get(), options);
+      auto v = p.WithVars(CommonVars(file_options));
+
+      std::string info_path = absl::StrCat(basename, ".pb.h.meta");
+      file_generator.GenerateModularUmbrellaHeader(
+          &p, file_options.annotate_headers ? info_path : "", basename);
+
+      if (file_options.annotate_headers) {
+        auto info_output = absl::WrapUnique(generator_context->Open(info_path));
+        annotations.SerializeToZeroCopyStream(info_output.get());
+      }
+    }
+  } else {
     auto output = absl::WrapUnique(
         generator_context->Open(absl::StrCat(basename, ".pb.h")));
 
@@ -406,6 +456,8 @@ bool CppGenerator::GenerateAll(const std::vector<const FileDescriptor*>& files,
       common_file_options.strip_nonfunctional_codegen = true;
     } else if (key == "experimental_cpp_micro_string") {
       common_file_options.experimental_use_micro_string = true;
+    } else if (key == "modular_output") {
+      common_file_options.modular_output = true;
     } else {
       *error = absl::StrCat("Unknown generator option: ", key);
       return false;

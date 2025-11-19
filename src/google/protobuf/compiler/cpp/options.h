@@ -68,6 +68,10 @@ struct Options {
   bool strip_nonfunctional_codegen = false;
   bool experimental_use_micro_string =
       google::protobuf::internal::EnableExperimentalMicroString();
+  // When true, generates modular output with one header per top-level message
+  // and an umbrella header that includes all individual message headers.
+  // This reduces compile times by allowing fine-grained includes.
+  bool modular_output = false;
 };
 
 }  // namespace cpp

@@ -72,6 +72,22 @@ class PROTOC_EXPORT FileGenerator {
   // extensions.
   void GenerateGlobalSource(io::Printer* p);
 
+  // The following member functions are used when the modular_output option is
+  // set. In this mode, each top-level message gets its own header file,
+  // and an umbrella header includes all of them for backward compatibility.
+
+  // Returns the number of top-level messages (excluding nested).
+  int NumTopLevelMessages() const;
+  // Generates a forward declaration header (_fwd.pb.h) with forward
+  // declarations for all messages in the file.
+  void GenerateForwardDeclarationHeader(io::Printer* p);
+  // Generates a header file for a single top-level message.
+  void GenerateModularMessageHeader(int idx, io::Printer* p,
+                                    absl::string_view info_path);
+  // Generates the umbrella header that includes all individual message headers.
+  void GenerateModularUmbrellaHeader(io::Printer* p, absl::string_view info_path,
+                                     absl::string_view basename);
+
  private:
   // Generates a file, setting up the necessary accoutrements that start and
   // end the file, calling `cb` in between.
@@ -197,6 +213,9 @@ class PROTOC_EXPORT FileGenerator {
   std::vector<std::unique_ptr<EnumGenerator>> enum_generators_;
   std::vector<std::unique_ptr<ServiceGenerator>> service_generators_;
   std::vector<std::unique_ptr<ExtensionGenerator>> extension_generators_;
+
+  // Helper to get indices of top-level messages only (excluding nested).
+  std::vector<int> GetTopLevelMessageIndices() const;
 };
 
 }  // namespace cpp
