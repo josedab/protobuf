@@ -831,6 +831,39 @@ class PROTOBUF_EXPORT MessageLite {
     return AppendPartialToString(output);
   }
 
+  // ===================================================================
+  // Canonical API Aliases
+  //
+  // These methods provide a consistent API across all language implementations.
+  // They are aliases for existing methods and do not change behavior.
+  // See docs/api-specification/CANONICAL_API.md for details.
+
+  // Canonical alias for SerializeAsString().
+  // Returns the serialized message as a string.
+  std::string serialize() const { return SerializeAsString(); }
+
+  // Canonical alias for ParseFromString().
+  // Parses a message from the given string. Returns true on success.
+  ABSL_ATTRIBUTE_REINITIALIZES bool parse(absl::string_view data) {
+    return ParseFromString(data);
+  }
+
+  // Canonical alias for Clear().
+  // Clears all fields of the message.
+  void clear() { Clear(); }
+
+  // Canonical alias for IsInitialized().
+  // Returns true if all required fields are set.
+  bool isInitialized() const { return IsInitialized(); }
+
+  // Canonical alias for ByteSizeLong().
+  // Returns the serialized size of the message.
+  size_t getSerializedSize() const { return ByteSizeLong(); }
+
+  // Canonical alias for MergeFromString().
+  // Merges a serialized message into this message.
+  bool mergeFrom(absl::string_view data) { return MergeFromString(data); }
+
   // Computes the serialized size of the message.  This recursively calls
   // ByteSizeLong() on all embedded messages.
   //

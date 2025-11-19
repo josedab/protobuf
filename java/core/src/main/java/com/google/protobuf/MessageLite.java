@@ -104,6 +104,49 @@ public interface MessageLite extends MessageLiteOrBuilder {
   void writeDelimitedTo(OutputStream output) throws IOException;
 
   // =================================================================
+  // Canonical API Aliases
+  //
+  // These methods provide a consistent API across all language implementations.
+  // They are aliases for existing methods and do not change behavior.
+  // See docs/api-specification/CANONICAL_API.md for details.
+
+  /**
+   * Canonical alias for {@link #toByteArray()}.
+   *
+   * <p>Serializes the message to a byte array. This provides a consistent API across all Protocol
+   * Buffers language implementations.
+   *
+   * @return the serialized message as a byte array
+   */
+  default byte[] serialize() {
+    return toByteArray();
+  }
+
+  /**
+   * Canonical alias for {@link #writeTo(OutputStream)}.
+   *
+   * <p>Serializes the message to an output stream. This provides a consistent API across all
+   * Protocol Buffers language implementations.
+   *
+   * @param output the output stream to write to
+   * @throws IOException if an I/O error occurs
+   */
+  default void serializeTo(OutputStream output) throws IOException {
+    writeTo(output);
+  }
+
+  /**
+   * Canonical alias for creating a deep copy of the message.
+   *
+   * <p>This provides a consistent API across all Protocol Buffers language implementations.
+   *
+   * @return a deep copy of this message
+   */
+  default MessageLite clone() {
+    return toBuilder().build();
+  }
+
+  // =================================================================
   // Builders
 
   /** Constructs a new builder for a message of the same type as this message. */

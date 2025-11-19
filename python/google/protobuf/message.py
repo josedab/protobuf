@@ -390,6 +390,94 @@ class Message(object):
     """
     raise NotImplementedError
 
+  # ===========================================================================
+  # Canonical API Aliases
+  #
+  # These methods provide a consistent API across all language implementations.
+  # They are aliases for existing methods and do not change behavior.
+  # See docs/api-specification/CANONICAL_API.md for details.
+
+  def serialize(self, **kwargs):
+    """Canonical alias for SerializeToString().
+
+    Serializes the protocol message to a binary string.
+
+    Keyword Args:
+      deterministic (bool): If true, requests deterministic serialization
+        of the protobuf, with predictable ordering of map keys.
+
+    Returns:
+      bytes: A binary string representation of the message.
+
+    Raises:
+      EncodeError: if the message isn't initialized.
+    """
+    return self.SerializeToString(**kwargs)
+
+  def parse(self, serialized):
+    """Canonical alias for ParseFromString().
+
+    Parse serialized protocol buffer data in binary form into this message.
+
+    Args:
+      serialized (bytes): The serialized protocol buffer data.
+
+    Returns:
+      int: The number of bytes read from serialized.
+
+    Raises:
+      DecodeError: if the input cannot be parsed.
+    """
+    return self.ParseFromString(serialized)
+
+  def clear(self):
+    """Canonical alias for Clear().
+
+    Clears all data that was set in the message.
+    """
+    self.Clear()
+
+  def is_initialized(self):
+    """Canonical alias for IsInitialized().
+
+    Checks if the message is initialized.
+
+    Returns:
+      bool: True if all required fields are set.
+    """
+    return self.IsInitialized()
+
+  def get_serialized_size(self):
+    """Canonical alias for ByteSize().
+
+    Returns the serialized size of this message.
+
+    Returns:
+      int: The number of bytes required to serialize this message.
+    """
+    return self.ByteSize()
+
+  def merge_from(self, other_msg):
+    """Canonical alias for MergeFrom().
+
+    Merges the contents of the specified message into current message.
+
+    Args:
+      other_msg (Message): A message to merge into the current message.
+    """
+    self.MergeFrom(other_msg)
+
+  def clone(self):
+    """Create a deep copy of this message.
+
+    This provides a consistent API across all Protocol Buffers language
+    implementations.
+
+    Returns:
+      Message: A new message that is a deep copy of this message.
+    """
+    return self.__deepcopy__()
+
   @classmethod
   def FromString(cls, s):
     raise NotImplementedError
