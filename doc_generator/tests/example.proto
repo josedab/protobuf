@@ -1,0 +1,354 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2024 Google LLC.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+// Example proto file demonstrating enhanced documentation support.
+
+syntax = "proto3";
+
+package example.users.v1;
+
+option java_package = "com.example.users.v1";
+option go_package = "example.com/users/v1";
+
+/**
+ * User represents a person in the system.
+ *
+ * Users are created via the {@link UserService.CreateUser} RPC and can be
+ * retrieved using their {@link #uuid_id}.
+ *
+ * ## Lifecycle
+ *
+ * 1. Created with `CreateUser`
+ * 2. Updated with `UpdateUser`
+ * 3. Deleted with `DeleteUser`
+ *
+ * @example
+ * ```protobuf
+ * User user = {
+ *   uuid_id: "550e8400-e29b-41d4-a716-446655440000",
+ *   email: "user@example.com",
+ *   name: "Alice Smith"
+ * };
+ * ```
+ *
+ * @see UserService
+ * @since v1.0.0
+ */
+message User {
+  /// The user's unique identifier.
+  ///
+  /// @format uuid
+  /// @required
+  string uuid_id = 1;
+
+  /// Primary email address for notifications.
+  ///
+  /// @format email
+  /// @example "user@example.com"
+  string email = 2;
+
+  /// Display name shown in UI.
+  ///
+  /// @minLength 1
+  /// @maxLength 100
+  string name = 3;
+
+  /// User's avatar image URL.
+  ///
+  /// @format uri
+  string avatar_url = 4;
+
+  /// When the user was created.
+  ///
+  /// @format datetime
+  string created_at = 5;
+
+  /// Current status of the user account.
+  UserStatus status = 6;
+
+  /// User's organization.
+  ///
+  /// @see Organization
+  string organization_id = 7;
+
+  /// Custom metadata.
+  map<string, string> metadata = 8;
+}
+
+/**
+ * UserStatus represents the lifecycle state of a user.
+ *
+ * ```
+ * PENDING → ACTIVE → SUSPENDED → DELETED
+ *                  ↘           ↗
+ *                    INACTIVE
+ * ```
+ *
+ * @since v1.0.0
+ */
+enum UserStatus {
+  /// Default value, should not be used.
+  USER_STATUS_UNSPECIFIED = 0;
+
+  /// User has registered but not verified email.
+  ///
+  /// @since v1.0.0
+  PENDING = 1;
+
+  /// User is active and can use the system.
+  ///
+  /// @since v1.0.0
+  ACTIVE = 2;
+
+  /// User temporarily disabled by admin.
+  ///
+  /// @since v1.1.0
+  SUSPENDED = 3;
+
+  /// User chose to deactivate account.
+  ///
+  /// @since v1.2.0
+  INACTIVE = 4;
+
+  /// User permanently deleted.
+  ///
+  /// @since v1.0.0
+  DELETED = 5;
+}
+
+/**
+ * Organization represents a company or team.
+ *
+ * Organizations contain multiple users and have their own settings.
+ *
+ * @since v1.0.0
+ */
+message Organization {
+  /// Unique identifier.
+  ///
+  /// @format uuid
+  /// @required
+  string id = 1;
+
+  /// Organization display name.
+  ///
+  /// @minLength 1
+  /// @maxLength 255
+  string name = 2;
+
+  /// Member users.
+  ///
+  /// @see User
+  repeated string member_ids = 3;
+
+  /// Organization settings.
+  OrganizationSettings settings = 4;
+}
+
+/**
+ * Settings for an organization.
+ *
+ * @since v1.1.0
+ */
+message OrganizationSettings {
+  /// Whether to allow public signups.
+  bool allow_public_signup = 1;
+
+  /// Maximum number of members.
+  ///
+  /// @min 1
+  /// @max 10000
+  int32 max_members = 2;
+
+  /// Domains allowed for email signup.
+  ///
+  /// @example ["example.com", "corp.example.com"]
+  repeated string allowed_domains = 3;
+}
+
+/// Request to create a new user.
+message CreateUserRequest {
+  /// The user to create.
+  ///
+  /// @required
+  User user = 1;
+
+  /// Whether to send welcome email.
+  bool send_welcome_email = 2;
+}
+
+/// Response from creating a user.
+message CreateUserResponse {
+  /// The created user with assigned ID.
+  User user = 1;
+}
+
+/// Request to get a user by ID.
+message GetUserRequest {
+  /// The user ID to retrieve.
+  ///
+  /// @format uuid
+  /// @required
+  string user_id = 1;
+}
+
+/// Response containing the requested user.
+message GetUserResponse {
+  /// The requested user.
+  User user = 1;
+}
+
+/// Request to update a user.
+message UpdateUserRequest {
+  /// The user with updated fields.
+  ///
+  /// @required
+  User user = 1;
+
+  /// Fields to update. If empty, all fields are updated.
+  repeated string update_mask = 2;
+}
+
+/// Response from updating a user.
+message UpdateUserResponse {
+  /// The updated user.
+  User user = 1;
+}
+
+/// Request to delete a user.
+message DeleteUserRequest {
+  /// The user ID to delete.
+  ///
+  /// @format uuid
+  /// @required
+  string user_id = 1;
+}
+
+/// Response from deleting a user.
+message DeleteUserResponse {
+  /// Whether the deletion was successful.
+  bool success = 1;
+}
+
+/// Request to list users with filtering and pagination.
+message ListUsersRequest {
+  /// Maximum users to return (1-100).
+  ///
+  /// @min 1
+  /// @max 100
+  /// @default 20
+  int32 page_size = 1;
+
+  /// Token from previous response.
+  string page_token = 2;
+
+  /// Filter by organization.
+  string organization_id = 3;
+
+  /// Filter by status.
+  UserStatus status = 4;
+}
+
+/// Response containing a page of users.
+message ListUsersResponse {
+  /// The matching users.
+  repeated User users = 1;
+
+  /// Token for next page.
+  string next_page_token = 2;
+
+  /// Total count of matching users.
+  int32 total_count = 3;
+}
+
+/**
+ * UserService provides operations for managing user accounts.
+ *
+ * ## Authentication
+ *
+ * All methods require a valid JWT token in the `Authorization` header.
+ *
+ * ## Rate Limiting
+ *
+ * - `GetUser`: 100 requests/minute
+ * - `ListUsers`: 10 requests/minute
+ * - `CreateUser`: 5 requests/minute
+ *
+ * @see AuthService for authentication
+ * @since v1.0.0
+ */
+service UserService {
+  /**
+   * CreateUser creates a new user account.
+   *
+   * @example
+   * ```
+   * request: {
+   *   user: {
+   *     email: "alice@example.com",
+   *     name: "Alice Smith"
+   *   },
+   *   send_welcome_email: true
+   * }
+   * response: {
+   *   user: {
+   *     uuid_id: "550e8400-e29b-41d4-a716-446655440000",
+   *     email: "alice@example.com",
+   *     name: "Alice Smith",
+   *     status: "PENDING"
+   *   }
+   * }
+   * ```
+   *
+   * @throws ALREADY_EXISTS if email is taken
+   * @throws INVALID_ARGUMENT if email format is invalid
+   */
+  rpc CreateUser(CreateUserRequest) returns (CreateUserResponse);
+
+  /**
+   * GetUser retrieves a user by ID.
+   *
+   * @example
+   * ```
+   * request: { user_id: "550e8400-e29b-41d4-a716-446655440000" }
+   * response: { user: { name: "Alice", email: "alice@example.com" } }
+   * ```
+   *
+   * @throws NOT_FOUND if user doesn't exist
+   * @throws PERMISSION_DENIED if not authorized
+   */
+  rpc GetUser(GetUserRequest) returns (GetUserResponse);
+
+  /**
+   * UpdateUser updates an existing user.
+   *
+   * Only the fields specified in update_mask are modified.
+   *
+   * @throws NOT_FOUND if user doesn't exist
+   * @throws INVALID_ARGUMENT if update is invalid
+   */
+  rpc UpdateUser(UpdateUserRequest) returns (UpdateUserResponse);
+
+  /**
+   * DeleteUser permanently removes a user.
+   *
+   * This action cannot be undone. Consider using status=DELETED for soft delete.
+   *
+   * @throws NOT_FOUND if user doesn't exist
+   * @throws FAILED_PRECONDITION if user has active resources
+   */
+  rpc DeleteUser(DeleteUserRequest) returns (DeleteUserResponse);
+
+  /**
+   * ListUsers returns all users matching criteria.
+   *
+   * Results are paginated with max 100 per page.
+   *
+   * @throws INVALID_ARGUMENT if page_size is out of range
+   */
+  rpc ListUsers(ListUsersRequest) returns (ListUsersResponse);
+}

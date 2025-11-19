@@ -1,0 +1,266 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2024 Google LLC.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+// Documentation annotation extensions for Protocol Buffers.
+// These extensions allow structured documentation metadata to be attached
+// to proto definitions for automatic documentation generation.
+
+syntax = "proto2";
+
+package google.protobuf.doc;
+
+import "google/protobuf/descriptor.proto";
+
+option java_package = "com.google.protobuf";
+option java_outer_classname = "DocOptionsProto";
+option java_multiple_files = true;
+option cc_enable_arenas = true;
+
+// File-level documentation options
+extend google.protobuf.FileOptions {
+  optional FileDocOptions file_doc = 536001000;
+}
+
+// Message-level documentation options
+extend google.protobuf.MessageOptions {
+  optional MessageDocOptions message_doc = 536001001;
+}
+
+// Field-level documentation options
+extend google.protobuf.FieldOptions {
+  optional FieldDocOptions field_doc = 536001002;
+}
+
+// Enum-level documentation options
+extend google.protobuf.EnumOptions {
+  optional EnumDocOptions enum_doc = 536001003;
+}
+
+// Enum value-level documentation options
+extend google.protobuf.EnumValueOptions {
+  optional EnumValueDocOptions enum_value_doc = 536001004;
+}
+
+// Service-level documentation options
+extend google.protobuf.ServiceOptions {
+  optional ServiceDocOptions service_doc = 536001005;
+}
+
+// Method-level documentation options
+extend google.protobuf.MethodOptions {
+  optional MethodDocOptions method_doc = 536001006;
+}
+
+// File-level documentation options
+message FileDocOptions {
+  // Brief description of the file's purpose
+  optional string description = 1;
+
+  // Version when this file was introduced
+  optional string since = 2;
+
+  // Team or person responsible for this file
+  optional string author = 3;
+
+  // Related files to reference
+  repeated string see_also = 4;
+
+  // Custom tags for categorization
+  repeated string tags = 5;
+}
+
+// Message-level documentation options
+message MessageDocOptions {
+  // Detailed description of the message
+  optional string description = 1;
+
+  // Version when this message was introduced
+  optional string since = 2;
+
+  // Deprecation information
+  optional DeprecationInfo deprecated = 3;
+
+  // Team or person responsible
+  optional string author = 4;
+
+  // Related types to reference
+  repeated string see_also = 5;
+
+  // Usage examples
+  repeated Example examples = 6;
+
+  // Custom tags
+  repeated string tags = 7;
+}
+
+// Field-level documentation options
+message FieldDocOptions {
+  // Description of the field
+  optional string description = 1;
+
+  // Format hint (email, uuid, uri, datetime, etc.)
+  optional string format = 2;
+
+  // Whether the field is required
+  optional bool required = 3;
+
+  // Example value
+  optional string example = 4;
+
+  // Default value description
+  optional string default_value = 5;
+
+  // Minimum string length
+  optional int32 min_length = 6;
+
+  // Maximum string length
+  optional int32 max_length = 7;
+
+  // Minimum numeric value
+  optional double min = 8;
+
+  // Maximum numeric value
+  optional double max = 9;
+
+  // Validation regex pattern
+  optional string pattern = 10;
+
+  // Version when this field was introduced
+  optional string since = 11;
+
+  // Deprecation information
+  optional DeprecationInfo deprecated = 12;
+
+  // Related fields or types
+  repeated string see_also = 13;
+
+  // Custom validation rules description
+  optional string validation = 14;
+}
+
+// Enum-level documentation options
+message EnumDocOptions {
+  // Description of the enum
+  optional string description = 1;
+
+  // Version when this enum was introduced
+  optional string since = 2;
+
+  // Deprecation information
+  optional DeprecationInfo deprecated = 3;
+
+  // Related types
+  repeated string see_also = 4;
+
+  // Usage examples
+  repeated Example examples = 5;
+}
+
+// Enum value-level documentation options
+message EnumValueDocOptions {
+  // Description of this enum value
+  optional string description = 1;
+
+  // Version when this value was introduced
+  optional string since = 2;
+
+  // Deprecation information
+  optional DeprecationInfo deprecated = 3;
+}
+
+// Service-level documentation options
+message ServiceDocOptions {
+  // Description of the service
+  optional string description = 1;
+
+  // Version when this service was introduced
+  optional string since = 2;
+
+  // Deprecation information
+  optional DeprecationInfo deprecated = 3;
+
+  // Team or person responsible
+  optional string author = 4;
+
+  // Related services
+  repeated string see_also = 5;
+
+  // Authentication requirements
+  optional string authentication = 6;
+
+  // Rate limiting information
+  optional string rate_limit = 7;
+
+  // Usage examples
+  repeated Example examples = 8;
+}
+
+// Method-level documentation options
+message MethodDocOptions {
+  // Description of the method
+  optional string description = 1;
+
+  // Version when this method was introduced
+  optional string since = 2;
+
+  // Deprecation information
+  optional DeprecationInfo deprecated = 3;
+
+  // Possible error responses
+  repeated ErrorResponse errors = 4;
+
+  // Usage examples
+  repeated Example examples = 5;
+
+  // Rate limiting specific to this method
+  optional string rate_limit = 6;
+
+  // Required permissions
+  repeated string permissions = 7;
+}
+
+// Deprecation information
+message DeprecationInfo {
+  // Version when deprecated
+  optional string version = 1;
+
+  // Reason for deprecation and migration path
+  optional string reason = 2;
+
+  // Replacement to use instead
+  optional string replacement = 3;
+
+  // Date when it will be removed (if known)
+  optional string removal_date = 4;
+}
+
+// Usage example
+message Example {
+  // Title or label for the example
+  optional string title = 1;
+
+  // Language for syntax highlighting
+  optional string language = 2;
+
+  // The example code or content
+  optional string code = 3;
+
+  // Description of what the example demonstrates
+  optional string description = 4;
+}
+
+// Error response documentation
+message ErrorResponse {
+  // Error code (e.g., "NOT_FOUND", "INVALID_ARGUMENT")
+  optional string code = 1;
+
+  // When this error occurs
+  optional string condition = 2;
+
+  // Description of the error
+  optional string description = 3;
+}

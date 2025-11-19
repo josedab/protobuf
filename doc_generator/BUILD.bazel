@@ -1,0 +1,77 @@
+# Protocol Buffers - Google's data interchange format
+# Copyright 2024 Google LLC.  All rights reserved.
+#
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file or at
+# https://developers.google.com/open-source/licenses/bsd
+
+# Documentation generator plugin for Protocol Buffers.
+
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test")
+load("@rules_proto//proto:defs.bzl", "proto_library")
+
+package(default_visibility = ["//visibility:public"])
+
+licenses(["notice"])
+
+proto_library(
+    name = "doc_options_proto",
+    srcs = ["doc_options.proto"],
+    deps = ["//src/google/protobuf:descriptor_proto"],
+)
+
+cc_library(
+    name = "doc_comment_parser",
+    srcs = ["doc_comment_parser.cc"],
+    hdrs = ["doc_comment_parser.h"],
+    deps = [
+        "//src/google/protobuf",
+        "//src/google/protobuf:protobuf_lite",
+    ],
+)
+
+cc_library(
+    name = "doc_generator_lib",
+    srcs = ["doc_generator.cc"],
+    hdrs = ["doc_generator.h"],
+    deps = [
+        ":doc_comment_parser",
+        "//src/google/protobuf",
+        "//src/google/protobuf/compiler:code_generator",
+        "//src/google/protobuf/io",
+    ],
+)
+
+cc_binary(
+    name = "protoc-gen-doc",
+    srcs = ["protoc-gen-doc.cc"],
+    deps = [
+        ":doc_generator_lib",
+        "//src/google/protobuf/compiler:code_generator",
+    ],
+)
+
+cc_test(
+    name = "doc_comment_parser_test",
+    srcs = ["tests/doc_comment_parser_test.cc"],
+    deps = [
+        ":doc_comment_parser",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "doc_generator_test",
+    srcs = ["tests/doc_generator_test.cc"],
+    data = [
+        "tests/example.proto",
+    ],
+    deps = [
+        ":doc_generator_lib",
+        "//src/google/protobuf",
+        "//src/google/protobuf/compiler:importer",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
