@@ -37,6 +37,14 @@ IMPACT   │ Coverage Reporting    │ Optimization
 | RFC-0006 | Cross-Language API Consistency | 6 weeks | High | Low |
 | RFC-0007 | Async/Streaming API | 8 weeks | High | Low |
 | RFC-0008 | Zero-Copy Optimization | 3 weeks | Medium | Medium |
+| RFC-0009 | Built-in Validation Constraints | 8 weeks | High | Medium |
+| RFC-0010 | Enhanced Scalar Types | 6 weeks | High | Medium |
+| RFC-0011 | Improved Field Deprecation | 4 weeks | Medium | High |
+| RFC-0012 | Safe Field Number Management | 4 weeks | High | High |
+| RFC-0013 | Enhanced Oneof Semantics | 5 weeks | Medium | Low |
+| RFC-0014 | Standard Protobuf Formatter | 4 weeks | High | High |
+| RFC-0015 | Enhanced Documentation Support | 5 weeks | High | Medium |
+| RFC-0016 | Generic/Template Messages | 10 weeks | High | Low |
 
 ## Quick Wins (< 1 week, immediate value)
 
