@@ -1,0 +1,94 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+// Example usage of enhanced scalar types.
+
+syntax = "proto3";
+
+package google.protobuf.example;
+
+import "google/protobuf/uuid.proto";
+import "google/protobuf/decimal.proto";
+import "google/protobuf/url.proto";
+import "google/protobuf/timestamp_tz.proto";
+
+option java_package = "com.google.protobuf.example";
+option java_outer_classname = "EnhancedScalarTypesExample";
+
+// Example: Payment transaction using enhanced scalar types.
+message Payment {
+  // Unique transaction identifier (16 bytes vs 36 bytes as string)
+  google.protobuf.Uuid transaction_id = 1;
+
+  // Exact decimal amount with no floating-point errors
+  google.protobuf.Decimal amount = 2;
+
+  // Validated callback URL
+  google.protobuf.Url callback_url = 3;
+
+  // Transaction time with timezone preservation
+  google.protobuf.TimestampTz created_at = 4;
+
+  // Payment status
+  PaymentStatus status = 5;
+
+  // Customer reference ID
+  google.protobuf.Uuid customer_id = 6;
+
+  // Tax amount (precise decimal)
+  google.protobuf.Decimal tax = 7;
+
+  // Total amount (precise decimal)
+  google.protobuf.Decimal total = 8;
+}
+
+enum PaymentStatus {
+  PAYMENT_STATUS_UNSPECIFIED = 0;
+  PAYMENT_STATUS_PENDING = 1;
+  PAYMENT_STATUS_COMPLETED = 2;
+  PAYMENT_STATUS_FAILED = 3;
+  PAYMENT_STATUS_REFUNDED = 4;
+}
+
+// Example: User profile with enhanced types.
+message UserProfile {
+  // User's unique identifier
+  google.protobuf.Uuid user_id = 1;
+
+  // User's display name
+  string display_name = 2;
+
+  // User's website
+  google.protobuf.Url website = 3;
+
+  // Account creation time with timezone
+  google.protobuf.TimestampTz created_at = 4;
+
+  // Last login time with timezone
+  google.protobuf.TimestampTz last_login = 5;
+
+  // Account balance (precise decimal)
+  google.protobuf.Decimal balance = 6;
+}
+
+// Example: API endpoint configuration.
+message ApiEndpoint {
+  // Endpoint identifier
+  google.protobuf.Uuid endpoint_id = 1;
+
+  // Base URL for the endpoint
+  google.protobuf.Url base_url = 2;
+
+  // Health check URL
+  google.protobuf.Url health_check_url = 3;
+
+  // Rate limit (requests per second as decimal)
+  google.protobuf.Decimal rate_limit = 4;
+
+  // Last health check time
+  google.protobuf.TimestampTz last_health_check = 5;
+}

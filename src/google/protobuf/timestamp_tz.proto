@@ -1,0 +1,84 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+syntax = "proto3";
+
+package google.protobuf;
+
+option cc_enable_arenas = true;
+option go_package = "google.golang.org/protobuf/types/known/timestamptzpb";
+option java_package = "com.google.protobuf";
+option java_outer_classname = "TimestampTzProto";
+option java_multiple_files = true;
+option objc_class_prefix = "GPB";
+option csharp_namespace = "Google.Protobuf.WellKnownTypes";
+
+// A TimestampTz represents a point in time with an associated timezone.
+// Unlike the standard Timestamp which is always UTC, TimestampTz preserves
+// the original timezone information, which is important for applications
+// that need to display times in the user's local timezone or perform
+// timezone-aware date calculations.
+//
+// The time is stored as UTC seconds and nanoseconds for efficient
+// comparison and arithmetic, with the timezone stored separately
+// using IANA timezone names (e.g., "America/New_York").
+//
+// # Examples
+//
+// Example 1: Create TimestampTz from string in C++.
+//
+//     TimestampTz ts;
+//     TimestampTzUtil::FromString(
+//         "2024-01-15T10:30:00-05:00[America/New_York]", &ts);
+//
+// Example 2: Convert to local time.
+//
+//     TimestampTz ts = ...;
+//     std::string local = TimestampTzUtil::ToLocalTimeString(ts);
+//     // "2024-01-15T10:30:00" in America/New_York
+//
+// Example 3: Create with current time in specific timezone.
+//
+//     TimestampTz ts = TimestampTzUtil::Now("America/Los_Angeles");
+//
+// Example 4: Convert between timezones.
+//
+//     TimestampTz ny_time = ...;  // Time in New York
+//     TimestampTz la_time = TimestampTzUtil::WithTimezone(
+//         ny_time, "America/Los_Angeles");
+//
+// # JSON Mapping
+//
+// In JSON format, the TimestampTz type is encoded as a string with
+// the timezone name in brackets:
+//   "2024-01-15T10:30:00-05:00[America/New_York]"
+//
+// The format follows ISO 8601 extended format with IANA timezone names.
+// If the timezone name is not available, only the offset is included:
+//   "2024-01-15T10:30:00-05:00"
+//
+message TimestampTz {
+  // Represents seconds of UTC time since Unix epoch 1970-01-01T00:00:00Z.
+  // Must be between -62135596800 and 253402300799 inclusive.
+  int64 seconds = 1;
+
+  // Non-negative fractions of a second at nanosecond resolution.
+  // Must be between 0 and 999,999,999 inclusive.
+  int32 nanos = 2;
+
+  // The IANA timezone name (e.g., "America/New_York", "Europe/London").
+  // See https://www.iana.org/time-zones for the complete list.
+  // If empty, UTC is assumed.
+  string timezone = 3;
+
+  // The UTC offset in seconds at the time represented by this timestamp.
+  // This is derived from the timezone but stored for efficiency.
+  // For example, -18000 for UTC-5 (Eastern Standard Time).
+  // Note: This may differ from the current offset for the timezone due to
+  // daylight saving time changes.
+  int32 utc_offset_seconds = 4;
+}

@@ -186,6 +186,92 @@ upb_proto_reflection_library(
     deps = [":timestamp_proto"],
 )
 
+# Enhanced scalar types - UUID, Decimal, URL, TimestampTz
+
+proto_library(
+    name = "uuid_proto",
+    srcs = ["uuid.proto"],
+    strip_import_prefix = "/src",
+)
+
+cc_proto_library(
+    name = "uuid_cc_proto",
+    deps = [":uuid_proto"],
+)
+
+upb_c_proto_library(
+    name = "uuid_upb_proto",
+    deps = [":uuid_proto"],
+)
+
+upb_proto_reflection_library(
+    name = "uuid_upb_reflection_proto",
+    deps = [":uuid_proto"],
+)
+
+proto_library(
+    name = "decimal_proto",
+    srcs = ["decimal.proto"],
+    strip_import_prefix = "/src",
+)
+
+cc_proto_library(
+    name = "decimal_cc_proto",
+    deps = [":decimal_proto"],
+)
+
+upb_c_proto_library(
+    name = "decimal_upb_proto",
+    deps = [":decimal_proto"],
+)
+
+upb_proto_reflection_library(
+    name = "decimal_upb_reflection_proto",
+    deps = [":decimal_proto"],
+)
+
+proto_library(
+    name = "url_proto",
+    srcs = ["url.proto"],
+    strip_import_prefix = "/src",
+)
+
+cc_proto_library(
+    name = "url_cc_proto",
+    deps = [":url_proto"],
+)
+
+upb_c_proto_library(
+    name = "url_upb_proto",
+    deps = [":url_proto"],
+)
+
+upb_proto_reflection_library(
+    name = "url_upb_reflection_proto",
+    deps = [":url_proto"],
+)
+
+proto_library(
+    name = "timestamp_tz_proto",
+    srcs = ["timestamp_tz.proto"],
+    strip_import_prefix = "/src",
+)
+
+cc_proto_library(
+    name = "timestamp_tz_cc_proto",
+    deps = [":timestamp_tz_proto"],
+)
+
+upb_c_proto_library(
+    name = "timestamp_tz_upb_proto",
+    deps = [":timestamp_tz_proto"],
+)
+
+upb_proto_reflection_library(
+    name = "timestamp_tz_upb_reflection_proto",
+    deps = [":timestamp_tz_proto"],
+)
+
 proto_library(
     name = "type_proto",
     srcs = ["type.proto"],

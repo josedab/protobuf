@@ -1,0 +1,63 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+syntax = "proto3";
+
+package google.protobuf;
+
+option cc_enable_arenas = true;
+option go_package = "google.golang.org/protobuf/types/known/uuidpb";
+option java_package = "com.google.protobuf";
+option java_outer_classname = "UuidProto";
+option java_multiple_files = true;
+option objc_class_prefix = "GPB";
+option csharp_namespace = "Google.Protobuf.WellKnownTypes";
+
+// A UUID (Universally Unique Identifier) represents a 128-bit identifier
+// as defined in RFC 4122. UUIDs are used to identify information in
+// computer systems without requiring central coordination.
+//
+// The UUID is stored as two 64-bit integers representing the most
+// significant and least significant bits, providing a compact wire
+// format (16 bytes) compared to string representation (36 bytes).
+//
+// # Examples
+//
+// Example 1: Create UUID from string in C++.
+//
+//     Uuid uuid;
+//     UuidUtil::FromString("550e8400-e29b-41d4-a716-446655440000", &uuid);
+//
+// Example 2: Generate a random UUID v4 in C++.
+//
+//     Uuid uuid = UuidUtil::Generate();
+//     std::string str = UuidUtil::ToString(uuid);
+//
+// Example 3: Create UUID from bytes.
+//
+//     uint8_t bytes[16] = {...};
+//     Uuid uuid;
+//     UuidUtil::FromBytes(bytes, &uuid);
+//
+// # JSON Mapping
+//
+// In JSON format, the UUID type is encoded as a string in the standard
+// 8-4-4-4-12 hexadecimal format with hyphens:
+//   "550e8400-e29b-41d4-a716-446655440000"
+//
+// The UUID string is case-insensitive for parsing but will be output
+// in lowercase.
+//
+message Uuid {
+  // The most significant 64 bits of the UUID.
+  // Contains the time_low, time_mid, and time_hi_and_version fields.
+  uint64 high = 1;
+
+  // The least significant 64 bits of the UUID.
+  // Contains the clock_seq_hi_and_reserved, clock_seq_low, and node fields.
+  uint64 low = 2;
+}

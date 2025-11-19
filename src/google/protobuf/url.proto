@@ -1,0 +1,87 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+syntax = "proto3";
+
+package google.protobuf;
+
+option cc_enable_arenas = true;
+option go_package = "google.golang.org/protobuf/types/known/urlpb";
+option java_package = "com.google.protobuf";
+option java_outer_classname = "UrlProto";
+option java_multiple_files = true;
+option objc_class_prefix = "GPB";
+option csharp_namespace = "Google.Protobuf.WellKnownTypes";
+
+// A Url represents a validated Uniform Resource Locator as defined in
+// RFC 3986. Unlike a plain string field, a Url provides validation
+// at parse time, ensuring the URL is well-formed before use.
+//
+// The URL is stored as its string representation for simplicity and
+// readability, with optional parsed components for efficient access.
+//
+// # Examples
+//
+// Example 1: Create and validate URL in C++.
+//
+//     Url url;
+//     if (!UrlUtil::FromString("https://example.com/path?query=1", &url)) {
+//       LOG(ERROR) << "Invalid URL";
+//     }
+//
+// Example 2: Access URL components.
+//
+//     Url url;
+//     UrlUtil::FromString("https://user:pass@example.com:8080/path", &url);
+//     std::string host = url.host();      // "example.com"
+//     int32_t port = url.port();          // 8080
+//     std::string path = url.path();      // "/path"
+//
+// Example 3: Build URL from components.
+//
+//     Url url;
+//     url.set_scheme("https");
+//     url.set_host("api.example.com");
+//     url.set_path("/v1/users");
+//     url.set_query("limit=10");
+//
+// # JSON Mapping
+//
+// In JSON format, the Url type is encoded as a string:
+//   "https://example.com/path?query=value"
+//
+// The URL must be valid according to RFC 3986. Invalid URLs will cause
+// a parsing error.
+//
+message Url {
+  // The complete URL string. This is the canonical representation.
+  // Must be a valid URL according to RFC 3986.
+  string value = 1;
+
+  // The scheme component (e.g., "http", "https", "ftp").
+  // Automatically parsed from value.
+  string scheme = 2;
+
+  // The host component (e.g., "example.com", "192.168.1.1").
+  string host = 3;
+
+  // The port number. 0 indicates default port for the scheme.
+  int32 port = 4;
+
+  // The path component (e.g., "/api/v1/users").
+  string path = 5;
+
+  // The query string without the leading '?' (e.g., "key=value&foo=bar").
+  string query = 6;
+
+  // The fragment identifier without the leading '#' (e.g., "section1").
+  string fragment = 7;
+
+  // The userinfo component (e.g., "username:password").
+  // Note: Including credentials in URLs is generally discouraged.
+  string userinfo = 8;
+}

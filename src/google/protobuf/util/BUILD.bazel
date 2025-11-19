@@ -207,6 +207,128 @@ cc_test(
     ],
 )
 
+# Enhanced scalar type utilities
+
+cc_library(
+    name = "uuid_util",
+    srcs = ["uuid_util.cc"],
+    hdrs = ["uuid_util.h"],
+    strip_include_prefix = "/src",
+    visibility = ["//:__subpackages__"],
+    deps = [
+        "//src/google/protobuf",
+        "//src/google/protobuf:uuid_cc_proto",
+        "//src/google/protobuf:port",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:str_format",
+    ],
+)
+
+cc_test(
+    name = "uuid_util_test",
+    srcs = ["uuid_util_test.cc"],
+    deps = [
+        ":uuid_util",
+        "//src/google/protobuf",
+        "//src/google/protobuf:uuid_cc_proto",
+        "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "decimal_util",
+    srcs = ["decimal_util.cc"],
+    hdrs = ["decimal_util.h"],
+    strip_include_prefix = "/src",
+    visibility = ["//:__subpackages__"],
+    deps = [
+        "//src/google/protobuf",
+        "//src/google/protobuf:decimal_cc_proto",
+        "//src/google/protobuf:port",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:str_format",
+    ],
+)
+
+cc_test(
+    name = "decimal_util_test",
+    srcs = ["decimal_util_test.cc"],
+    deps = [
+        ":decimal_util",
+        "//src/google/protobuf",
+        "//src/google/protobuf:decimal_cc_proto",
+        "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "url_util",
+    srcs = ["url_util.cc"],
+    hdrs = ["url_util.h"],
+    strip_include_prefix = "/src",
+    visibility = ["//:__subpackages__"],
+    deps = [
+        "//src/google/protobuf",
+        "//src/google/protobuf:url_cc_proto",
+        "//src/google/protobuf:port",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:str_format",
+    ],
+)
+
+cc_test(
+    name = "url_util_test",
+    srcs = ["url_util_test.cc"],
+    deps = [
+        ":url_util",
+        "//src/google/protobuf",
+        "//src/google/protobuf:url_cc_proto",
+        "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "timestamp_tz_util",
+    srcs = ["timestamp_tz_util.cc"],
+    hdrs = ["timestamp_tz_util.h"],
+    strip_include_prefix = "/src",
+    visibility = ["//:__subpackages__"],
+    deps = [
+        ":time_util",
+        "//src/google/protobuf",
+        "//src/google/protobuf:duration_cc_proto",
+        "//src/google/protobuf:timestamp_cc_proto",
+        "//src/google/protobuf:timestamp_tz_cc_proto",
+        "//src/google/protobuf:port",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/strings:str_format",
+    ],
+)
+
+cc_test(
+    name = "timestamp_tz_util_test",
+    srcs = ["timestamp_tz_util_test.cc"],
+    deps = [
+        ":timestamp_tz_util",
+        "//src/google/protobuf",
+        "//src/google/protobuf:duration_cc_proto",
+        "//src/google/protobuf:timestamp_tz_cc_proto",
+        "//src/google/protobuf/testing",
+        "//src/google/protobuf/testing:file",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
 cc_library(
     name = "type_resolver",
     srcs = ["type_resolver_util.cc"],
