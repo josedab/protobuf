@@ -1,0 +1,42 @@
+%% Protocol Buffers Plugin Protocol
+%% Commit: ea940efd2c20e4e8b6509153a703175a51e66749
+
+sequenceDiagram
+    participant User as User
+    participant Protoc as protoc
+    participant Plugin as protoc-gen-xxx
+
+    User->>Protoc: protoc --xxx_out=. input.proto
+
+    Note over Protoc: Parse input.proto
+    Note over Protoc: Build descriptor tree
+
+    Protoc->>Protoc: Find protoc-gen-xxx in PATH
+    Protoc->>Plugin: Spawn process
+
+    rect rgb(240, 248, 255)
+        Note over Protoc,Plugin: CodeGeneratorRequest (via stdin)
+        Protoc->>Plugin: file_to_generate: ["input.proto"]
+        Protoc->>Plugin: proto_file: [FileDescriptorProto...]
+        Protoc->>Plugin: parameter: "option1=value1"
+    end
+
+    Note over Plugin: Generate code from descriptors
+
+    rect rgb(255, 248, 240)
+        Note over Plugin,Protoc: CodeGeneratorResponse (via stdout)
+        Plugin->>Protoc: file: [{name: "input.xxx", content: "..."}]
+        Plugin->>Protoc: supported_features: EDITIONS
+    end
+
+    Protoc->>Protoc: Write generated files
+    Protoc->>User: Success
+
+    Note over User,Plugin: Error Handling
+
+    alt Parse Error
+        Plugin->>Protoc: error: "Invalid input"
+        Protoc->>User: Error message
+    else Success
+        Protoc->>User: Generated files
+    end

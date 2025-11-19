@@ -1,0 +1,46 @@
+%% Protocol Buffers Data Flow
+%% Commit: ea940efd2c20e4e8b6509153a703175a51e66749
+
+sequenceDiagram
+    participant User as User Code
+    participant Msg as Message Object
+    participant Ser as Serializer
+    participant Wire as Wire Format
+    participant Net as Network/Storage
+    participant Par as Parser
+    participant Msg2 as Message Object
+
+    Note over User,Msg2: Serialization Flow
+
+    User->>Msg: Create Message
+    User->>Msg: Set Fields
+    User->>Ser: SerializeToString()
+
+    Ser->>Msg: ByteSizeLong()
+    Msg-->>Ser: Calculate size
+    Ser->>Ser: Allocate buffer
+
+    loop For each field
+        Ser->>Msg: Get field value
+        Ser->>Wire: Encode tag + value
+        Wire-->>Ser: Encoded bytes
+    end
+
+    Ser-->>User: Serialized bytes
+    User->>Net: Send/Store
+
+    Note over User,Msg2: Deserialization Flow
+
+    Net-->>User: Receive bytes
+    User->>Par: ParseFromString()
+
+    loop While bytes remain
+        Par->>Wire: Read tag
+        Wire-->>Par: Field number + type
+        Par->>Wire: Read value
+        Wire-->>Par: Decoded value
+        Par->>Msg2: Set field
+    end
+
+    Par-->>User: Success/Failure
+    User->>Msg2: Access fields

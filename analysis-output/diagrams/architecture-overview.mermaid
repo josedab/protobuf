@@ -1,0 +1,77 @@
+%% Protocol Buffers Architecture Overview
+%% Commit: ea940efd2c20e4e8b6509153a703175a51e66749
+
+graph TB
+    subgraph "Input"
+        PROTO[".proto Files"]
+    end
+
+    subgraph "Compiler (protoc)"
+        PARSER["Parser<br/><small>parser.cc</small>"]
+        DESC["Descriptor Pool<br/><small>descriptor.h</small>"]
+        CLI["Command Line Interface<br/><small>command_line_interface.cc</small>"]
+
+        subgraph "Code Generators"
+            CPP_GEN["C++ Generator<br/><small>cpp/generator.cc</small>"]
+            JAVA_GEN["Java Generator<br/><small>java/generator.cc</small>"]
+            PY_GEN["Python Generator<br/><small>python/generator.cc</small>"]
+            OTHER_GEN["Other Generators<br/><small>C#, Ruby, PHP, etc.</small>"]
+        end
+
+        PLUGIN["Plugin System<br/><small>plugin.proto</small>"]
+    end
+
+    subgraph "Generated Output"
+        CPP_OUT[".pb.h / .pb.cc"]
+        JAVA_OUT[".java"]
+        PY_OUT["_pb2.py"]
+        OTHER_OUT["Other Languages"]
+    end
+
+    subgraph "Runtime Libraries"
+        CPP_RT["C++ Runtime<br/><small>message.h, arena.h</small>"]
+        JAVA_RT["Java Runtime<br/><small>AbstractMessage.java</small>"]
+        PY_RT["Python Runtime<br/><small>message.py</small>"]
+        OTHER_RT["Other Runtimes"]
+    end
+
+    subgraph "Applications"
+        APP["User Applications"]
+    end
+
+    PROTO --> PARSER
+    PARSER --> DESC
+    DESC --> CLI
+    CLI --> CPP_GEN
+    CLI --> JAVA_GEN
+    CLI --> PY_GEN
+    CLI --> OTHER_GEN
+    CLI --> PLUGIN
+
+    CPP_GEN --> CPP_OUT
+    JAVA_GEN --> JAVA_OUT
+    PY_GEN --> PY_OUT
+    OTHER_GEN --> OTHER_OUT
+    PLUGIN --> OTHER_OUT
+
+    CPP_OUT --> CPP_RT
+    JAVA_OUT --> JAVA_RT
+    PY_OUT --> PY_RT
+    OTHER_OUT --> OTHER_RT
+
+    CPP_RT --> APP
+    JAVA_RT --> APP
+    PY_RT --> APP
+    OTHER_RT --> APP
+
+    classDef input fill:#e1f5fe,stroke:#01579b
+    classDef compiler fill:#fff3e0,stroke:#e65100
+    classDef output fill:#f3e5f5,stroke:#7b1fa2
+    classDef runtime fill:#e8f5e9,stroke:#2e7d32
+    classDef app fill:#fce4ec,stroke:#c2185b
+
+    class PROTO input
+    class PARSER,DESC,CLI,CPP_GEN,JAVA_GEN,PY_GEN,OTHER_GEN,PLUGIN compiler
+    class CPP_OUT,JAVA_OUT,PY_OUT,OTHER_OUT output
+    class CPP_RT,JAVA_RT,PY_RT,OTHER_RT runtime
+    class APP app

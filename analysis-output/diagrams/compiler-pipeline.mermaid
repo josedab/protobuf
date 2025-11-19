@@ -1,0 +1,56 @@
+%% Protocol Buffers Compiler Pipeline
+%% Commit: ea940efd2c20e4e8b6509153a703175a51e66749
+
+flowchart LR
+    subgraph Input
+        A[".proto file"]
+    end
+
+    subgraph "Stage 1: Tokenization"
+        B["Tokenizer<br/><small>tokenizer.cc</small>"]
+    end
+
+    subgraph "Stage 2: Parsing"
+        C["Parser<br/><small>parser.cc</small>"]
+        D["FileDescriptorProto"]
+    end
+
+    subgraph "Stage 3: Validation"
+        E["DescriptorPool<br/><small>descriptor.cc</small>"]
+        F["FileDescriptor<br/>+ Descriptor Tree"]
+    end
+
+    subgraph "Stage 4: Generation"
+        G["CodeGenerator<br/><small>code_generator.h</small>"]
+
+        subgraph "Generators"
+            H1["FileGenerator"]
+            H2["MessageGenerator"]
+            H3["FieldGenerator"]
+            H4["EnumGenerator"]
+        end
+    end
+
+    subgraph Output
+        I[".pb.h / .pb.cc"]
+    end
+
+    A --> B
+    B --> C
+    C --> D
+    D --> E
+    E --> F
+    F --> G
+    G --> H1
+    H1 --> H2
+    H2 --> H3
+    H1 --> H4
+    H1 --> I
+    H2 --> I
+    H3 --> I
+    H4 --> I
+
+    style A fill:#e3f2fd
+    style D fill:#fff8e1
+    style F fill:#f3e5f5
+    style I fill:#e8f5e9

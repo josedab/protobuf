@@ -1,0 +1,59 @@
+%% Protocol Buffers Arena Allocation
+%% Commit: ea940efd2c20e4e8b6509153a703175a51e66749
+
+graph TB
+    subgraph "Arena Allocation"
+        ARENA["Arena Object"]
+
+        subgraph "Memory Block 1"
+            B1_MSG1["Message A"]
+            B1_MSG2["Message B"]
+            B1_STR["String Data"]
+            B1_FREE["(Free Space)"]
+        end
+
+        subgraph "Memory Block 2"
+            B2_MSG1["Message C"]
+            B2_MSG2["Message D"]
+            B2_FREE["(Free Space)"]
+        end
+    end
+
+    subgraph "Standard Allocation"
+        HEAP["Heap"]
+        H_MSG1["Message A"]
+        H_MSG2["Message B"]
+        H_MSG3["Message C"]
+        H_STR["String Data"]
+    end
+
+    subgraph "Benefits"
+        BEN1["✓ Fewer allocations"]
+        BEN2["✓ Better cache locality"]
+        BEN3["✓ Bulk deallocation"]
+        BEN4["✓ No fragmentation"]
+    end
+
+    ARENA --> B1_MSG1
+    B1_MSG1 --> B1_MSG2
+    B1_MSG2 --> B1_STR
+    B1_STR --> B1_FREE
+
+    ARENA --> B2_MSG1
+    B2_MSG1 --> B2_MSG2
+    B2_MSG2 --> B2_FREE
+
+    HEAP --> H_MSG1
+    HEAP --> H_MSG2
+    HEAP --> H_MSG3
+    HEAP --> H_STR
+
+    classDef arena fill:#e8f5e9,stroke:#2e7d32
+    classDef heap fill:#ffebee,stroke:#c62828
+    classDef benefit fill:#e3f2fd,stroke:#1565c0
+    classDef free fill:#f5f5f5,stroke:#9e9e9e,stroke-dasharray: 5 5
+
+    class ARENA,B1_MSG1,B1_MSG2,B1_STR,B2_MSG1,B2_MSG2 arena
+    class HEAP,H_MSG1,H_MSG2,H_MSG3,H_STR heap
+    class BEN1,BEN2,BEN3,BEN4 benefit
+    class B1_FREE,B2_FREE free
