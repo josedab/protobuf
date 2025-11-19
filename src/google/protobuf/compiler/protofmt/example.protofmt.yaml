@@ -1,0 +1,33 @@
+# protofmt configuration file
+# This file configures the Protocol Buffer formatter
+
+# Number of spaces for indentation (default: 2)
+# Allowed values: 1-8
+indent: 2
+
+# Align field types and names in messages (default: false)
+# When true, fields are aligned like:
+#   string          name    = 1;
+#   int32           age     = 2;
+#   repeated string tags    = 3;
+align_fields: false
+
+# Sort import statements alphabetically (default: true)
+# Imports are grouped by type: standard, public, weak
+sort_imports: true
+
+# Maximum line length before wrapping (default: 100)
+# Allowed values: 40-500
+max_line_length: 100
+
+# Preserve comments in output (default: true)
+# Note: Comment preservation is best-effort
+preserve_comments: true
+
+# Add trailing commas in option lists (default: false)
+# When true, options look like:
+#   string value = 1 [
+#     deprecated = true,
+#     packed = false,
+#   ];
+trailing_commas: false

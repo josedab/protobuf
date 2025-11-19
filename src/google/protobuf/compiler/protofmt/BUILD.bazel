@@ -1,0 +1,82 @@
+################################################################################
+# Protocol Buffers Formatter
+################################################################################
+
+load("@rules_cc//cc:defs.bzl", "cc_binary", "cc_library", "cc_test")
+load("//build_defs:cpp_opts.bzl", "COPTS")
+
+cc_library(
+    name = "protofmt_config",
+    srcs = ["protofmt_config.cc"],
+    hdrs = ["protofmt_config.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = ["//visibility:public"],
+    deps = [
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:statusor",
+        "@abseil-cpp//absl/strings",
+    ],
+)
+
+cc_library(
+    name = "protofmt_lib",
+    srcs = ["protofmt.cc"],
+    hdrs = ["protofmt.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":protofmt_config",
+        "//src/google/protobuf",
+        "//src/google/protobuf:port",
+        "//src/google/protobuf/compiler:importer",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:tokenizer",
+        "@abseil-cpp//absl/status",
+        "@abseil-cpp//absl/status:statusor",
+        "@abseil-cpp//absl/strings",
+    ],
+)
+
+cc_binary(
+    name = "protofmt",
+    srcs = ["protofmt_main.cc"],
+    copts = COPTS,
+    visibility = ["//visibility:public"],
+    deps = [
+        ":protofmt_config",
+        ":protofmt_lib",
+        "@abseil-cpp//absl/flags:flag",
+        "@abseil-cpp//absl/flags:parse",
+        "@abseil-cpp//absl/log:globals",
+        "@abseil-cpp//absl/log:initialize",
+        "@abseil-cpp//absl/strings",
+    ],
+)
+
+cc_test(
+    name = "protofmt_test",
+    srcs = ["protofmt_test.cc"],
+    copts = COPTS,
+    deps = [
+        ":protofmt_config",
+        ":protofmt_lib",
+        "//src/google/protobuf:test_textproto",
+        "@abseil-cpp//absl/strings",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_test(
+    name = "protofmt_config_test",
+    srcs = ["protofmt_config_test.cc"],
+    copts = COPTS,
+    deps = [
+        ":protofmt_config",
+        "@abseil-cpp//absl/strings",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
