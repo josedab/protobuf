@@ -1,0 +1,257 @@
+===============================================================================
+PROTOBUF PROJECT - QUICK DEPENDENCY REFERENCE
+===============================================================================
+
+PROJECT VERSION: 6.34.0 (C++/Python), 4.34.0 (Java)
+
+===============================================================================
+CORE RUNTIME DEPENDENCIES (Non-Optional)
+===============================================================================
+
+C++:
+  - abseil-cpp (20250512.1) - Foundational C++ library
+  - zlib (1.3.1) - Compression support  [Optional: controlled by protobuf_WITH_ZLIB]
+  - utf8_range (internal) - UTF-8 validation
+
+Python:
+  - numpy (<=2.3.4) - For C extension modules
+  - absl-py (2.x) - Abseil Python utilities
+  - setuptools (<=78.1.1) - Build utilities
+
+Java:
+  - guava (32.0.1-jre) - Utility library
+  - gson (2.8.9) - JSON serialization
+  - jsr305 (3.0.2) - Null-safety annotations
+  - error_prone_annotations (2.18.0) - Compiler annotations
+  - j2objc-annotations (2.8) - Java annotations
+  - checker-qual (3.33.0) - Type checking
+  - failureaccess (1.0.1) - Guava utilities
+
+Ruby:
+  - bigdecimal - Decimal number support
+  - ffi (~>1) - Foreign function interface [JRuby]
+  - ffi-compiler (~>1) - FFI compiler [JRuby]
+  - rake-compiler (>= 1.2) - C extension compilation
+  
+===============================================================================
+BUILD SYSTEM TOOLS (Required)
+===============================================================================
+
+PRIMARY:
+  - Bazel (7.0+) - Main build system
+    * MODULE.bazel - Bzlmod configuration
+    * WORKSPACE - Legacy dependency configuration
+  - CMake (3.16+) - Alternative build system [C++ 17 minimum]
+
+BAZEL BUILD RULES (Loaded as dependencies):
+  - rules_cc (0.0.17) - C++ compilation
+  - rules_java (8.6.1) - Java compilation
+  - rules_python (1.6.0) - Python rules
+  - rules_proto (7.1.0) - Proto toolchain
+  - rules_jvm_external (6.7) - Maven artifact resolution
+  - rules_kotlin (1.9.6) - Kotlin compiler
+  - rules_apple (3.16.0) - Apple platform support
+  - rules_pkg (1.0.1) - Packaging
+  - rules_ruby (0.17.3) - Ruby support [with patches]
+  - bazel_skylib (1.7.1) - Bazel utilities
+  - bazel_features (1.33.0) - Feature detection
+  - platforms (0.0.11) - Platform definitions
+
+PACKAGE MANAGERS:
+  - Maven Central (Sonatype)
+  - RubyGems.org
+  - PyPI
+
+===============================================================================
+TESTING FRAMEWORKS (Development Only)
+===============================================================================
+
+C++:
+  - GoogleTest (1.15.2) - Unit testing
+  - google_benchmark (1.9.2) - Performance benchmarking
+
+Java:
+  - JUnit (4.13.2) - Unit testing
+  - Mockito (4.3.1) - Test mocking
+  - Truth (1.1.2) - Assertion library
+  - Caliper (1.0-beta-3) - Micro-benchmarking
+
+Python:
+  - unittest (stdlib) - Unit testing
+  - pytest - (community usage)
+
+Ruby:
+  - test-unit (3.0+) - Unit testing
+
+Rust:
+  - googletest-rs - Unit testing
+  - paste - Macro utilities
+  - syn - Syntax tree parsing
+  - quote - Code generation
+
+SPECIALIZED:
+  - Conformance test suite - Cross-language validation
+  - Fuzzing (rules_fuzzing 0.5.3) - Fuzz testing
+  - Protoc plugin injection - Compiler extension testing
+
+===============================================================================
+INTERNAL DEPENDENCIES
+===============================================================================
+
+upb (Micro Protocol Buffers):
+  - Lightweight C implementation
+  - Core runtime for Python, PHP, Ruby extensions
+  - No stable C ABI
+
+googleapis:
+  - Well-known type definitions (benchmarking)
+
+COMPATIBILITY TESTING:
+  - protobuf v25.0 - Previous major version
+  - protobuf v29.0 - Previous release version
+
+===============================================================================
+BUILD CONFIGURATION OPTIONS
+===============================================================================
+
+CMake Options:
+  protobuf_BUILD_TESTS=ON/OFF
+  protobuf_BUILD_SHARED_LIBS=ON/OFF
+  protobuf_BUILD_PROTOC_BINARIES=ON/OFF (default: ON)
+  protobuf_BUILD_LIBUPB=ON/OFF (default: ON)
+  protobuf_WITH_ZLIB=ON/OFF (default: ON)
+  protobuf_FORCE_FETCH_DEPENDENCIES=ON/OFF
+  protobuf_LOCAL_DEPENDENCIES_ONLY=ON/OFF
+
+CMake Minimum Requirements:
+  - C++ standard: 17 or later
+  - Threads: CMake FindThreads
+  - ZLIB: CMake FindZLIB (with fallback to GitHub)
+  - Abseil: CONFIG mode lookup + fallback FetchContent
+
+===============================================================================
+LANGUAGE SUPPORT & VERSIONS
+===============================================================================
+
+C++:
+  - Compiler: GCC, Clang, MSVC
+  - Standard: C++17+
+  - Absl LTS version: 20250512.1 (May 2025)
+
+Java:
+  - Target: Java 8
+  - Kotlin: 1.6.0+
+  - Modules: java, java-lite, kotlin, kotlin-lite, java-util
+
+Python:
+  - Minimum: 3.9
+  - Tested: 3.9, 3.10, 3.11, 3.12, 3.13, 3.14
+  - Extension modules compiled from upb C
+
+Ruby:
+  - Distributions: RubyGems
+  - Native C extensions via rake-compiler
+  - JRuby support through FFI
+
+Rust:
+  - Minimum: 1.79
+  - Tested: 1.85.0
+  - Edition: 2021 (2024 in development)
+
+Go:
+  - Community-maintained via gRPC
+
+Objective-C:
+  - Apple platform support (iOS, macOS)
+
+PHP:
+  - PECL distribution
+  - Native extension via upb
+
+Lua:
+  - Lua 5.4.6 bindings
+  - upb C runtime
+
+C#:
+  - Community-maintained
+
+===============================================================================
+DEPENDENCY RESOLUTION STRATEGY
+===============================================================================
+
+Bazel MVS (Minimum Version Selection):
+  - Highest version across all dependencies wins
+  - Lock files: maven_install.json, maven_dev_install.json
+  - Bzlmod: Single version override for apple_support
+
+Maven:
+  - protobuf-bom manages version inheritance
+  - Test dependencies scoped separately
+  - Transitive dependency management via Guava
+
+Python:
+  - Upper bounds pinning
+  - absl-py: major version 2.x
+  - numpy: upper bound <= 2.3.4
+  - setuptools: upper bound <= 78.1.1
+
+===============================================================================
+CRITICAL VERSION PINS
+===============================================================================
+
+Strictly Pinned:
+  - rules_ruby: 0.17.3 (bundler patch required)
+  - apple_support: 1.15.1 (issue workaround)
+  - abseil-cpp: 20250512.1 (LTS)
+
+Version Ranges:
+  - absl-py: == 2.* (major version)
+  - Guava: 32.0.1 (exact)
+  - Kotlin: 1.6.0+ (minimum)
+  - Rust: 1.79+ (minimum)
+
+===============================================================================
+KEY FILES & LOCATIONS
+===============================================================================
+
+Build Configuration:
+  - WORKSPACE - Bazel legacy dependencies
+  - MODULE.bazel - Bazel bzlmod configuration
+  - CMakeLists.txt - CMake root configuration
+  - cmake/dependencies.cmake - Auto-generated versions
+  - cmake/*.cmake - Component-specific builds
+  - java/pom.xml - Maven parent POM
+  - python/requirements.txt - Python dependencies
+  - ruby/Gemfile - Ruby gem dependencies
+  - protobuf_deps.bzl - Dependency manifest
+
+Source Directories:
+  - src/google/protobuf/ - C++ implementation
+  - python/ - Python runtime
+  - java/ - Java runtime
+  - ruby/ - Ruby bindings
+  - upb/ - Micro protobuf C implementation
+  - third_party/ - Internal dependencies (utf8_range, jsoncpp, zlib)
+  - benchmarks/ - Performance tests
+
+===============================================================================
+SUMMARY: CRITICAL DEPENDENCIES
+===============================================================================
+
+To build protobuf, you MUST have:
+
+  1. Bazel 7.0+ OR CMake 3.16+
+  2. C++ compiler supporting C++17
+  3. abseil-cpp 20250512.1 (auto-fetched)
+  4. For optional compression: zlib 1.3.1 (auto-fetched)
+  5. For Python: numpy, absl-py, setuptools
+  6. For Java: guava, gson, and others (auto-fetched via Maven)
+  7. For Ruby: bigdecimal, ffi, rake-compiler
+
+Testing requires:
+  - GoogleTest 1.15.2
+  - Mockito 4.3.1 (Java)
+  - test-unit (Ruby)
+  - Conformance runner
+
+===============================================================================

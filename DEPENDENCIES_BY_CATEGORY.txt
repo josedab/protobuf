@@ -1,0 +1,387 @@
+================================================================================
+PROTOBUF PROJECT DEPENDENCIES - ORGANIZED BY CATEGORY AND LANGUAGE
+================================================================================
+
+PROJECT INFORMATION
+  Version (C++/Python): 6.34.0
+  Version (Java): 4.34.0
+  Primary Build System: Bazel 7.0+
+  Alternative: CMake 3.16+ (C++17 minimum)
+
+================================================================================
+1. BUILD SYSTEM & TOOLCHAINS
+================================================================================
+
+CORE BUILD TOOLS:
+  Name                          Version       Type        Purpose
+  ─────────────────────────────────────────────────────────────────────────
+  Bazel                         7.0+          Required    Main build system
+  CMake                         3.16+         Optional    Alternative C++ build
+  Maven Central                 -             Optional    Java packaging
+  
+BAZEL BUILD RULES (Auto-loaded via Bzlmod):
+  Name                          Version       Purpose
+  ─────────────────────────────────────────────────────────────────────────
+  rules_proto                   7.1.0         Proto toolchain
+  rules_cc                      0.0.17        C++ compilation/linking
+  rules_java                    8.6.1         Java compilation/packaging
+  rules_python                  1.6.0         Python build isolation
+  rules_jvm_external            6.7           Maven artifact resolution
+  rules_kotlin                  1.9.6         Kotlin compilation
+  rules_apple                   3.16.0        Apple platform toolchain
+  apple_support                 1.15.1        iOS/macOS build support
+  rules_pkg                     1.0.1         Package distribution
+  rules_shell                   0.2.0         Shell script rules
+  rules_ruby                    0.17.3        Ruby support (w/ patches)
+  rules_rust                    0.63.0        Rust compilation (dev)
+  rules_license                 1.0.0         License declarations
+  rules_buf                     0.3.0         Buf CLI integration (dev)
+  rules_testing                 0.9.0         Testing utilities (dev)
+  rules_fuzzing                 0.5.3         Fuzz test support (dev)
+  
+BAZEL UTILITIES:
+  bazel_skylib                  1.7.1         Standard library utilities
+  bazel_features                1.33.0        Feature detection
+  platforms                     0.0.11        Platform definitions/constraints
+
+================================================================================
+2. C++ RUNTIME DEPENDENCIES
+================================================================================
+
+MANDATORY C++ LIBRARIES:
+  Name                          Version       Source              Purpose
+  ─────────────────────────────────────────────────────────────────────────
+  abseil-cpp                    20250512.1    github.com/abseil   Foundational C++
+  zlib                          1.3.1         github.com/madler    Compression
+  utf8_range                    (internal)    third_party/        UTF-8 validation
+
+COMPONENTS FROM ABSEIL-CPP:
+  absl::strings                                              String utilities
+  absl::absl_check, absl::absl_log                          Logging/assertion
+  absl::status, absl::statusor                              Error handling
+  absl::flat_hash_map, absl::flat_hash_set                  Hash containers
+  absl::btree                                                B-tree containers
+  absl::cord                                                 Rope string type
+  absl::time                                                 Time utilities
+  absl::random_distributions, absl::random_random           Random numbers
+  absl::synchronization                                      Threading
+  absl::span                                                 Array views
+  absl::algorithm                                            Algorithm utilities
+
+OPTIONAL C++ LIBRARIES:
+  jsoncpp                       1.9.6         github.com/open-source-parsers JSON support
+
+================================================================================
+3. JAVA RUNTIME DEPENDENCIES
+================================================================================
+
+CORE JAVA LIBRARIES:
+  Name                          Version       Scope       Purpose
+  ─────────────────────────────────────────────────────────────────────────
+  guava                         32.0.1-jre    compile     Utility library
+  gson                          2.8.9         compile     JSON serialization
+  jsr305                        3.0.2         compile     Null-safety annotations
+  error_prone_annotations       2.18.0        compile     Compiler annotations
+  j2objc-annotations            2.8           compile     Java annotations
+  checker-qual                  3.33.0        compile     Type checker framework
+  failureaccess                 1.0.1         compile     Guava utilities
+  listenablefuture              9999.0        compile     Future shim
+
+JAVA TEST FRAMEWORKS:
+  junit                         4.13.2        test        Unit testing
+  mockito-core                  4.3.1         test        Test mocking
+  guava-testlib                 32.0.1-jre    test        Guava test utilities
+  truth                         1.1.2         test        Assertion library
+  test-parameter-injector       1.18          test        Parameter injection
+  caliper                       1.0-beta-3    test        Micro-benchmarking
+  biz.aQute.bndlib              6.4.0         test        OSGi utilities
+  picocli                       4.6.3         test        CLI framework
+
+JAVA MODULES PROVIDED:
+  Module                        Purpose
+  ─────────────────────────────────────────────────────────────────────────
+  protobuf-java                 Core runtime
+  protobuf-java-util            Utilities (JSON, etc)
+  protobuf-java-lite            Lightweight (Android)
+  protobuf-bom                  Bill of Materials
+  protobuf-kotlin               Kotlin bindings
+  protobuf-kotlin-lite          Kotlin lightweight
+
+KOTLIN SUPPORT:
+  Language: Kotlin 1.6.0+
+  Build Rule: rules_kotlin (1.9.6)
+
+================================================================================
+4. PYTHON RUNTIME DEPENDENCIES
+================================================================================
+
+PYTHON DEPENDENCIES:
+  Name                          Version       Purpose
+  ─────────────────────────────────────────────────────────────────────────
+  numpy                         <=2.3.4       C extension array support
+  absl-py                       2.x           Abseil Python (logging)
+  setuptools                    <=78.1.1      Build/distribution utilities
+
+PYTHON BUILD SUPPORT:
+  rules_python                  1.6.0         Python build rules
+  system_python                 3.9+          Hermetic Python support
+  pip                           (via rules)   Dependency resolution
+
+PYTHON VERSIONS SUPPORTED:
+  Minimum: 3.9
+  Tested: 3.9, 3.10, 3.11, 3.12, 3.13, 3.14
+  Extension Module: google._upb._message (C extension from upb)
+
+PYTHON TESTING:
+  unittest                      (stdlib)      Unit testing
+  pytest                        (community)   Testing framework
+
+================================================================================
+5. RUBY RUNTIME DEPENDENCIES
+================================================================================
+
+RUBY DEPENDENCIES:
+  Name                          Version       Group           Purpose
+  ─────────────────────────────────────────────────────────────────────────
+  bigdecimal                    latest        runtime         Decimal numbers
+  ffi                           ~>1           dev/jruby       Foreign functions
+  ffi-compiler                  ~>1           dev/jruby       FFI compilation
+  rake                          >=13          development     Build automation
+  rake-compiler                 ~>1.2         development     C extension build
+  rake-compiler-dock            ~>1.9         development     Docker support
+  test-unit                     ~>3.0, >=3.0.9 test           Unit testing
+
+RUBY BUILD SYSTEM:
+  rules_ruby: 0.17.3 (with patches for bundler)
+  Distribution: RubyGems
+
+================================================================================
+6. RUST SUPPORT
+================================================================================
+
+RUST BUILD SYSTEM:
+  rules_rust: 0.63.0
+  Minimum version: 1.79
+  Tested version: 1.85.0
+  Edition: 2021 (2024 in development)
+
+RUST CRATE DEPENDENCIES:
+  Name                          Purpose
+  ─────────────────────────────────────────────────────────────────────────
+  googletest                    Unit testing
+  paste                         Macro utilities
+  quote                         Code generation
+  syn                           Syntax tree parsing
+
+================================================================================
+7. OTHER LANGUAGE SUPPORT
+================================================================================
+
+GO:
+  Status: Community-maintained via gRPC
+  Build: rules_go (Bazel)
+
+OBJECTIVE-C:
+  Platform: Apple (iOS, macOS, tvOS, watchOS)
+  Build Rules: rules_apple (3.16.0)
+
+PHP:
+  Distribution: PECL
+  Runtime: upb C extension
+
+LUA:
+  Version: 5.4.6
+  Runtime: upb C bindings
+
+C#:
+  Status: Community-maintained
+
+================================================================================
+8. TESTING FRAMEWORKS (DEVELOPMENT ONLY)
+================================================================================
+
+C++ TESTING:
+  GoogleTest (gtest)                         1.15.2       Unit testing
+  google_benchmark                           1.9.2        Performance benchmarking
+  Bazel Rule: cc_test
+
+JAVA TESTING:
+  JUnit                                      4.13.2       Unit testing
+  Mockito                                    4.3.1        Mocking
+  Truth                                      1.1.2        Assertions
+  Caliper                                    1.0-beta-3   Micro-benchmarks
+  Bazel Rule: junit_tests
+
+PYTHON TESTING:
+  unittest                                   (stdlib)     Unit testing
+  pytest                                     (community)  Test framework
+  Bazel Rule: py_test
+
+RUBY TESTING:
+  test-unit                                  3.0+         Unit testing
+  Build Tool: Rake
+
+RUST TESTING:
+  googletest-rs                              (crates)     Unit testing
+  Bazel Rule: rust_test
+
+SPECIALIZED TESTING:
+  Conformance Suite                          -            Cross-language validation
+  rules_fuzzing                              0.5.3        Fuzz testing
+  Protoc Plugin Injection                    -            Compiler extension testing
+
+================================================================================
+9. INTERNAL & THIRD-PARTY DEPENDENCIES
+================================================================================
+
+INTERNAL PROJECTS:
+  Project                       Location        Purpose
+  ─────────────────────────────────────────────────────────────────────────
+  upb                           /upb            Micro protobuf C runtime
+  utf8_range                    third_party/    UTF-8 validation
+  jsoncpp                       third_party/    JSON support
+
+EXTERNAL REFERENCE VERSIONS (compatibility testing):
+  com_google_protobuf_v25       25.0            Previous major version
+  com_google_protobuf_previous  29.0            Previous release
+
+GOOGLEAPIS:
+  Version: fe8ba054ad4f7eca946c2d14a63c3f07c0b586a0
+  Purpose: Well-known types (benchmarking)
+
+================================================================================
+10. CMAKE DEPENDENCY RESOLUTION
+================================================================================
+
+CMake Auto-Discovered (with fallback fetch):
+  Dependency                    Fallback Strategy
+  ─────────────────────────────────────────────────────────────────────────
+  Threads                       CMake FindThreads
+  ZLIB                          FindZLIB → GitHub fetch
+  Abseil                        CONFIG mode → GitHub FetchContent
+  GoogleTest                    CONFIG mode → GitHub FetchContent
+  utf8_range                    Subdirectory (internal)
+
+CMAKE BUILD OPTIONS:
+  protobuf_BUILD_TESTS              Enable test compilation
+  protobuf_BUILD_SHARED_LIBS        Build shared libraries (default: OFF)
+  protobuf_BUILD_PROTOC_BINARIES    Build protoc (default: ON)
+  protobuf_BUILD_LIBUPB             Build upb (default: ON)
+  protobuf_WITH_ZLIB                Compression support (default: ON)
+  protobuf_FORCE_FETCH_DEPENDENCIES Force GitHub fetch
+  protobuf_LOCAL_DEPENDENCIES_ONLY  Use local packages only
+
+CMAKE MINIMUM REQUIREMENTS:
+  CMake: 3.16+ (with policy support up to 3.26)
+  C++: C++17 or later
+  Compiler: GCC, Clang, or MSVC
+
+================================================================================
+11. PACKAGE MANAGERS & REPOSITORIES
+================================================================================
+
+MAVEN REPOSITORIES:
+  https://repo1.maven.org/maven2
+  https://repo.maven.apache.org/maven2
+  Lock Files: maven_install.json, maven_dev_install.json
+
+PACKAGE REGISTRIES:
+  RubyGems: https://rubygems.org
+  PyPI: https://pypi.org
+  PECL (PHP): https://pecl.php.net
+  Maven Central (Java): https://mvnrepository.com
+
+================================================================================
+12. CRITICAL VERSION CONSTRAINTS
+================================================================================
+
+STRICTLY PINNED:
+  rules_ruby                    0.17.3 (requires bundler patch)
+  apple_support                 1.15.1 (issue #316 workaround)
+  abseil-cpp                    20250512.1 (LTS May 2025)
+
+VERSION RANGES:
+  absl-py                       == 2.* (major version 2)
+  Guava                         32.0.1 (exact)
+  Kotlin                        >= 1.6.0
+  Rust                          >= 1.79
+  Python                        >= 3.9, < 4.0
+  Java                          target 1.8
+
+UPPER BOUNDS:
+  numpy                         <= 2.3.4
+  setuptools                    <= 78.1.1
+
+================================================================================
+13. DEPENDENCY RESOLUTION STRATEGIES
+================================================================================
+
+BAZEL (Bzlmod):
+  Strategy: Minimum Version Selection (MVS)
+  Winner: Highest version across entire dependency graph
+  Lock Files: maven_install.json, maven_dev_install.json
+
+MAVEN:
+  Strategy: BOM import (Bill of Materials)
+  Inheritance: protobuf-bom manages all internal versions
+  Transitive: Guava brings additional transitive deps
+  Scope Isolation: test-only deps marked with <scope>test</scope>
+
+PYTHON:
+  Strategy: Upper bound pinning
+  Range Format: ==X.*, <=X.Y.Z
+  Constraint: absl-py==2.*, numpy<=2.3.4
+
+================================================================================
+14. BUILD DEPENDENCY MATRIX
+================================================================================
+
+Language       Compiler/Runtime    Build System    Test Framework        Version
+─────────────────────────────────────────────────────────────────────────────────
+C++            GCC/Clang/MSVC      Bazel/CMake     GoogleTest 1.15.2     C++17+
+Java           javac 1.8           Bazel/Maven     JUnit 4.13.2          Java 8+
+Python         CPython 3.9+        Bazel/pip       unittest + pytest     3.9-3.14
+Ruby           ruby 2.6+           Bazel/Rake      test-unit 3.0+        2.6+
+Rust           rustc 1.79+         Bazel           googletest-rs         1.79+
+Go             go 1.x              Bazel           testing               1.x+
+Kotlin         kotlinc 1.6+        Bazel           JUnit 4.13.2          1.6+
+Objective-C    clang               Bazel           XCTest                iOS/macOS
+PHP            php 7.0+            Bazel           phpunit               7.0+
+Lua            Lua 5.4.6           Bazel           custom                5.4.6
+C#             csc                 Community       custom                .NET 4.5+
+
+================================================================================
+15. CONFIGURATION BY BUILD TYPE
+================================================================================
+
+MINIMAL BUILD (Protobuf Library Only):
+  Requires:
+    - Bazel 7.0+ OR CMake 3.16+
+    - C++17 compiler
+    - abseil-cpp 20250512.1
+    - zlib 1.3.1 (optional)
+
+DEVELOPMENT BUILD (Includes Tests):
+  Additional:
+    - GoogleTest 1.15.2
+    - google_benchmark 1.9.2
+    - rules_fuzzing 0.5.3
+    - All language-specific test frameworks
+
+PYTHON WHEEL BUILD:
+  Requires:
+    - Python 3.9+
+    - numpy <= 2.3.4
+    - absl-py == 2.*
+    - setuptools <= 78.1.1
+    - Compiler with C++17 (for upb C extension)
+
+JAVA MAVEN BUILD:
+  Requires:
+    - Maven 3.6+
+    - Java 8+ compiler
+    - Guava 32.0.1
+    - gson 2.8.9
+    - All annotation libraries
+
+================================================================================
