@@ -1,0 +1,137 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2024 Google LLC.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+// Test file for enhanced field deprecation functionality.
+
+syntax = "proto2";
+
+package protobuf_unittest;
+
+import "google/protobuf/deprecation.proto";
+
+option java_package = "com.google.protobuf";
+option java_outer_classname = "UnittestDeprecationProto";
+
+// Message with various deprecated fields for testing enhanced deprecation.
+message TestEnhancedDeprecation {
+  // Simple deprecated field with no enhanced metadata
+  optional int32 simple_deprecated = 1 [deprecated = true];
+
+  // Deprecated field with full enhanced metadata
+  optional int32 legacy_id = 2 [
+    deprecated = true,
+    (google.protobuf.deprecation) = {
+      replacement: "uuid_id"
+      removal_version: "v3.0"
+      since_version: "v2.0"
+      migration_guide: "Use uuid_id for better uniqueness guarantees. "
+                       "Run migrate-tool --field=legacy_id to update."
+      breaking: true
+      documentation_url: "https://example.com/migration/legacy-id"
+      tags: { key: "team" value: "platform" }
+      tags: { key: "priority" value: "high" }
+    }
+  ];
+
+  // The replacement field
+  optional string uuid_id = 3;
+
+  // Deprecated field with partial metadata
+  optional string old_email = 4 [
+    deprecated = true,
+    (google.protobuf.deprecation) = {
+      replacement: "emails"
+      removal_version: "v3.0"
+      migration_guide: "Migrate to emails repeated field for multi-email support."
+    }
+  ];
+
+  // The replacement field
+  repeated string emails = 5;
+
+  // Deprecated field with only replacement info
+  optional int64 old_timestamp = 6 [
+    deprecated = true,
+    (google.protobuf.deprecation) = {
+      replacement: "created_at"
+    }
+  ];
+
+  // The replacement field
+  optional int64 created_at = 7;
+
+  // Non-breaking deprecated field
+  optional string deprecated_metadata = 8 [
+    deprecated = true,
+    (google.protobuf.deprecation) = {
+      replacement: "metadata"
+      since_version: "v2.5"
+      migration_guide: "Use metadata field instead."
+      breaking: false
+    }
+  ];
+
+  optional string metadata = 9;
+
+  // Deprecated field with version info only
+  optional bool old_flag = 10 [
+    deprecated = true,
+    (google.protobuf.deprecation) = {
+      since_version: "v1.5"
+      removal_version: "v4.0"
+    }
+  ];
+}
+
+// Message to test nested message deprecation
+message TestNestedDeprecation {
+  message InnerMessage {
+    optional int32 old_value = 1 [
+      deprecated = true,
+      (google.protobuf.deprecation) = {
+        replacement: "new_value"
+        removal_version: "v2.0"
+      }
+    ];
+
+    optional int32 new_value = 2;
+  }
+
+  optional InnerMessage inner = 1;
+}
+
+// Message for testing deprecated enum values
+message TestEnumValueDeprecation {
+  enum Status {
+    UNKNOWN = 0;
+    ACTIVE = 1;
+    INACTIVE = 2 [
+      deprecated = true,
+      (google.protobuf.enum_value_deprecation) = {
+        replacement: "DISABLED"
+        migration_guide: "Use DISABLED for clearer semantics."
+      }
+    ];
+    DISABLED = 3;
+  }
+
+  optional Status status = 1;
+}
+
+// Service with deprecated methods for testing
+service TestDeprecatedService {
+  rpc OldMethod(TestEnhancedDeprecation) returns (TestEnhancedDeprecation) {
+    option deprecated = true;
+    option (google.protobuf.method_deprecation) = {
+      replacement: "NewMethod"
+      removal_version: "v3.0"
+      migration_guide: "Use NewMethod for improved performance."
+    };
+  }
+
+  rpc NewMethod(TestEnhancedDeprecation) returns (TestEnhancedDeprecation);
+}

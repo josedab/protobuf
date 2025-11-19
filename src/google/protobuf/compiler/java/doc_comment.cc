@@ -18,6 +18,7 @@
 #include <string>
 #include <vector>
 
+#include "absl/strings/str_cat.h"
 #include "absl/strings/str_split.h"
 #include "absl/strings/string_view.h"
 #include "google/protobuf/compiler/java/options.h"
@@ -251,6 +252,85 @@ void WriteFieldDocComment(io::Printer* printer, const FieldDescriptor* field,
   printer->Print(" */\n");
 }
 
+// Helper function to extract string field from an extension message by name.
+static std::string GetJavaExtensionStringField(const Message& ext_msg,
+                                               const std::string& field_name) {
+  const Reflection* reflection = ext_msg.GetReflection();
+  const Descriptor* desc = ext_msg.GetDescriptor();
+  const FieldDescriptor* field = desc->FindFieldByName(field_name);
+  if (field && field->type() == FieldDescriptor::TYPE_STRING) {
+    return reflection->GetString(ext_msg, field);
+  }
+  return "";
+}
+
+// Build enhanced deprecation message for Java Javadoc.
+static std::string BuildJavaEnhancedDeprecation(const FieldDescriptor* field) {
+  if (!field->options().deprecated()) {
+    return "";
+  }
+
+  // Try to find the deprecation extension
+  const FieldDescriptor* deprecation_ext = nullptr;
+  const Reflection* reflection = field->options().GetReflection();
+
+  // Look for extension field named "deprecation" with number 1001
+  std::vector<const FieldDescriptor*> fields;
+  reflection->ListFields(field->options(), &fields);
+
+  for (const FieldDescriptor* f : fields) {
+    if (f->is_extension() && f->number() == 1001 &&
+        f->name() == "deprecation") {
+      deprecation_ext = f;
+      break;
+    }
+  }
+
+  if (!deprecation_ext) {
+    return "";  // No enhanced deprecation info
+  }
+
+  // Get the extension message
+  const Message& ext_msg = reflection->GetMessage(field->options(), deprecation_ext);
+
+  // Extract fields from DeprecationInfo
+  std::string replacement = GetJavaExtensionStringField(ext_msg, "replacement");
+  std::string removal_version = GetJavaExtensionStringField(ext_msg, "removal_version");
+  std::string since_version = GetJavaExtensionStringField(ext_msg, "since_version");
+  std::string migration_guide = GetJavaExtensionStringField(ext_msg, "migration_guide");
+
+  // Build the message
+  std::vector<std::string> parts;
+
+  if (!since_version.empty() && !removal_version.empty()) {
+    parts.push_back(absl::StrCat("Since ", since_version, ", removed in ", removal_version, "."));
+  } else if (!since_version.empty()) {
+    parts.push_back(absl::StrCat("Since ", since_version, "."));
+  } else if (!removal_version.empty()) {
+    parts.push_back(absl::StrCat("Removed in ", removal_version, "."));
+  }
+
+  if (!replacement.empty()) {
+    parts.push_back(absl::StrCat("Use {@link #get",
+                                 std::string(1, std::toupper(replacement[0])) + replacement.substr(1),
+                                 "()} instead."));
+  }
+
+  if (!migration_guide.empty()) {
+    parts.push_back(absl::StrCat("Migration: ", migration_guide));
+  }
+
+  std::string result;
+  for (const auto& part : parts) {
+    if (!result.empty()) {
+      result += "\n *             ";
+    }
+    result += part;
+  }
+
+  return result;
+}
+
 void WriteDeprecatedJavadoc(io::Printer* printer, const FieldDescriptor* field,
                             const FieldAccessorType type,
                             const Options options) {
@@ -264,8 +344,18 @@ void WriteDeprecatedJavadoc(io::Printer* printer, const FieldDescriptor* field,
     startLine = std::to_string(location.start_line);
   }
 
-  printer->Print(" * @deprecated $name$ is deprecated.\n", "name",
-                 field->full_name());
+  // Get enhanced deprecation info
+  std::string enhanced_info = BuildJavaEnhancedDeprecation(field);
+
+  if (!enhanced_info.empty()) {
+    printer->Print(" * @deprecated $name$ is deprecated.\n", "name",
+                   field->full_name());
+    printer->Print(" *             $enhanced$\n", "enhanced", enhanced_info);
+  } else {
+    printer->Print(" * @deprecated $name$ is deprecated.\n", "name",
+                   field->full_name());
+  }
+
   if (!options.strip_nonfunctional_codegen) {
     printer->Print(" *     See $file$;l=$line$\n", "file",
                    field->file()->name(), "line", startLine);

@@ -68,6 +68,114 @@ namespace google {
 namespace protobuf {
 namespace compiler {
 namespace cpp {
+
+// Helper function to extract string field from an extension message by name.
+static std::string GetExtensionStringField(const Message& ext_msg,
+                                           const std::string& field_name) {
+  const Reflection* reflection = ext_msg.GetReflection();
+  const Descriptor* desc = ext_msg.GetDescriptor();
+  const FieldDescriptor* field = desc->FindFieldByName(field_name);
+  if (field && field->type() == FieldDescriptor::TYPE_STRING) {
+    return reflection->GetString(ext_msg, field);
+  }
+  return "";
+}
+
+// Helper function to extract bool field from an extension message by name.
+static bool GetExtensionBoolField(const Message& ext_msg,
+                                  const std::string& field_name) {
+  const Reflection* reflection = ext_msg.GetReflection();
+  const Descriptor* desc = ext_msg.GetDescriptor();
+  const FieldDescriptor* field = desc->FindFieldByName(field_name);
+  if (field && field->type() == FieldDescriptor::TYPE_BOOL) {
+    return reflection->GetBool(ext_msg, field);
+  }
+  return false;
+}
+
+std::string BuildEnhancedDeprecationMessage(const FieldDescriptor* field) {
+  if (!field->options().deprecated()) {
+    return "";
+  }
+
+  // Try to find the deprecation extension
+  const FieldDescriptor* deprecation_ext = nullptr;
+  const Reflection* reflection = field->options().GetReflection();
+
+  // Look for extension field named "deprecation" with number 1001
+  std::vector<const FieldDescriptor*> fields;
+  reflection->ListFields(field->options(), &fields);
+
+  for (const FieldDescriptor* f : fields) {
+    if (f->is_extension() && f->number() == 1001 &&
+        f->name() == "deprecation") {
+      deprecation_ext = f;
+      break;
+    }
+  }
+
+  if (!deprecation_ext) {
+    return "";  // No enhanced deprecation info
+  }
+
+  // Get the extension message
+  const Message& ext_msg = reflection->GetMessage(field->options(), deprecation_ext);
+
+  // Extract fields from DeprecationInfo
+  std::string replacement = GetExtensionStringField(ext_msg, "replacement");
+  std::string removal_version = GetExtensionStringField(ext_msg, "removal_version");
+  std::string since_version = GetExtensionStringField(ext_msg, "since_version");
+  std::string migration_guide = GetExtensionStringField(ext_msg, "migration_guide");
+
+  // Build the message
+  std::vector<std::string> parts;
+
+  if (!since_version.empty()) {
+    parts.push_back(absl::StrCat("Deprecated since ", since_version));
+  }
+
+  if (!removal_version.empty()) {
+    if (!parts.empty()) {
+      parts[0] = absl::StrCat(parts[0], ", removed in ", removal_version);
+    } else {
+      parts.push_back(absl::StrCat("Removed in ", removal_version));
+    }
+  }
+
+  if (!replacement.empty()) {
+    parts.push_back(absl::StrCat("Use ", replacement, " instead"));
+  }
+
+  if (!migration_guide.empty()) {
+    parts.push_back(absl::StrCat("Migration: ", migration_guide));
+  }
+
+  if (parts.empty()) {
+    return "";
+  }
+
+  return absl::StrJoin(parts, ". ");
+}
+
+std::string DeprecatedAttribute(const Options& opts, const FieldDescriptor* d) {
+  if (!d->options().deprecated()) {
+    return "";
+  }
+
+  std::string enhanced_msg = BuildEnhancedDeprecationMessage(d);
+  if (!enhanced_msg.empty()) {
+    // Escape quotes in the message for C++ string literal
+    std::string escaped = absl::StrReplaceAll(enhanced_msg, {{"\"", "\\\""}});
+    return absl::StrCat("[[deprecated(\"", escaped, "\")]] ");
+  }
+
+  return "[[deprecated]] ";
+}
+
+std::string DeprecatedAttribute(const Options& opts, const EnumValueDescriptor* d) {
+  return d->options().deprecated() ? "[[deprecated]] " : "";
+}
+
 namespace {
 
 using ::google::protobuf::internal::cpp::HasbitMode;

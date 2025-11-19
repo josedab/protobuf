@@ -1,0 +1,82 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2024 Google LLC.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+syntax = "proto2";
+
+package google.protobuf;
+
+import "google/protobuf/descriptor.proto";
+
+option java_package = "com.google.protobuf";
+option java_outer_classname = "DeprecationProto";
+option go_package = "google.golang.org/protobuf/types/descriptorpb";
+option cc_enable_arenas = true;
+option objc_class_prefix = "GPB";
+
+// Enhanced deprecation information for fields.
+// This extension provides structured metadata for deprecated fields,
+// enabling tooling support for automated migration and breaking change detection.
+//
+// Example usage:
+//   int32 legacy_id = 1 [
+//     deprecated = true,
+//     (google.protobuf.deprecation) = {
+//       replacement: "uuid_id"
+//       removal_version: "v3.0"
+//       since_version: "v2.0"
+//       migration_guide: "Use uuid_id for better uniqueness guarantees."
+//       breaking: true
+//     }
+//   ];
+message DeprecationInfo {
+  // The field name that should be used instead of this deprecated field.
+  // This should be a valid field name within the same message.
+  optional string replacement = 1;
+
+  // The version when this field will be removed.
+  // Recommended format: Semantic versioning (e.g., "v3.0.0" or "v3.0").
+  optional string removal_version = 2;
+
+  // The version when this field was deprecated.
+  // Recommended format: Semantic versioning (e.g., "v2.0.0" or "v2.0").
+  optional string since_version = 3;
+
+  // Migration instructions for users of this field.
+  // Should describe how to migrate from this field to the replacement.
+  optional string migration_guide = 4;
+
+  // Whether removing this field represents a breaking change.
+  // Breaking changes may require special handling during migration.
+  optional bool breaking = 5 [default = false];
+
+  // URL for more detailed documentation about this deprecation.
+  optional string documentation_url = 6;
+
+  // Custom tags for tooling integration.
+  // Can be used to add organization-specific metadata.
+  map<string, string> tags = 7;
+}
+
+// Extension to FieldOptions for enhanced deprecation metadata.
+extend google.protobuf.FieldOptions {
+  optional DeprecationInfo deprecation = 1001;
+}
+
+// Extension to EnumValueOptions for enhanced deprecation metadata.
+extend google.protobuf.EnumValueOptions {
+  optional DeprecationInfo enum_value_deprecation = 1001;
+}
+
+// Extension to ServiceOptions for enhanced deprecation metadata.
+extend google.protobuf.ServiceOptions {
+  optional DeprecationInfo service_deprecation = 1001;
+}
+
+// Extension to MethodOptions for enhanced deprecation metadata.
+extend google.protobuf.MethodOptions {
+  optional DeprecationInfo method_deprecation = 1001;
+}
