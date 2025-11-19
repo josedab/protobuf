@@ -1,0 +1,68 @@
+name: Coverage Report
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install coverage pytest
+          sudo apt-get update
+          sudo apt-get install -y lcov
+
+      - name: C++ Coverage
+        run: |
+          chmod +x ./scripts/coverage_cpp.sh
+          ./scripts/coverage_cpp.sh
+        continue-on-error: true
+
+      - name: Java Coverage
+        run: |
+          bazel coverage //java/core:all --combined_report=lcov || true
+          mkdir -p coverage/java
+          if [ -f bazel-out/_coverage/_coverage_report.dat ]; then
+            cp bazel-out/_coverage/_coverage_report.dat coverage/java/jacoco.xml
+          fi
+        continue-on-error: true
+
+      - name: Python Coverage
+        run: |
+          chmod +x ./scripts/coverage_python.sh
+          ./scripts/coverage_python.sh
+        continue-on-error: true
+
+      - name: Upload to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: |
+            coverage/cpp/lcov.info,
+            coverage/java/jacoco.xml,
+            coverage/python/coverage.xml
+          flags: cpp,java,python
+          fail_ci_if_error: false
+          verbose: true
+
+      - name: Comment on PR
+        if: github.event_name == 'pull_request'
+        uses: codecov/codecov-action@v3
+        with:
+          files: |
+            coverage/cpp/lcov.info,
+            coverage/java/jacoco.xml,
+            coverage/python/coverage.xml
+          comment: true

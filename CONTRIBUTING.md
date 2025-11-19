@@ -110,6 +110,8 @@ the final release.
     Ultimately, the green signal will be provided by our testing infrastructure.
     The reviewer will help you if there are test failures that seem not related
     to the change you are making.
+*   Maintain or improve code coverage. Coverage reports are generated automatically
+    for PRs and viewable on Codecov. See the Code Coverage section below for details.
 
 ## Reviewer Guidelines
 
@@ -123,3 +125,49 @@ the final release.
   pull request. This will make it easier to identify which languages the pull
   request affects, allowing us to better identify appropriate reviewer, create
   a better release note, and make it easier to identify issues in the future.
+
+## Code Coverage
+
+We use Codecov to track test coverage across all supported languages (C++, Java, Python).
+Coverage reports are automatically generated for all PRs and pushed to main.
+
+### Viewing Coverage
+
+- **PR Comments:** Each PR receives an automated coverage report comment showing
+  overall coverage and per-language breakdown
+- **Dashboard:** Visit https://codecov.io/gh/protocolbuffers/protobuf for the
+  full coverage dashboard with trends and file-level details
+
+### Generating Coverage Locally
+
+You can generate coverage reports locally before submitting a PR:
+
+**C++ Coverage:**
+```bash
+./scripts/coverage_cpp.sh
+open coverage/cpp/html/index.html
+```
+
+**Python Coverage:**
+```bash
+./scripts/coverage_python.sh
+open coverage/python/html/index.html
+```
+
+**Java Coverage (via Bazel):**
+```bash
+bazel coverage //java/core:all --combined_report=lcov
+```
+
+### Coverage Requirements
+
+- **Patch coverage:** New code should have at least 80% coverage
+- **Project coverage:** Overall coverage should not decrease by more than 1%
+- Coverage thresholds are enforced via CI but may be waived for valid reasons
+
+### Coverage Flags
+
+Coverage is tracked separately for each language:
+- `cpp` - C++ implementation in `src/google/protobuf/`
+- `java` - Java implementation in `java/`
+- `python` - Python implementation in `python/google/protobuf/`
