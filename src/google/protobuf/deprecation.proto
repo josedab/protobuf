@@ -1,0 +1,101 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2024 Google LLC.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+syntax = "proto2";
+
+package google.protobuf;
+
+import "google/protobuf/descriptor.proto";
+
+option java_package = "com.google.protobuf";
+option java_outer_classname = "DeprecationProto";
+option cc_enable_arenas = true;
+option optimize_for = LITE_RUNTIME;
+
+// Extension for FieldOptions to provide enhanced deprecation metadata.
+extend google.protobuf.FieldOptions {
+  optional DeprecationInfo deprecation = 1001;
+}
+
+// Extension for EnumValueOptions to provide enhanced deprecation metadata.
+extend google.protobuf.EnumValueOptions {
+  optional DeprecationInfo enum_value_deprecation = 1001;
+}
+
+// Extension for MessageOptions to provide enhanced deprecation metadata.
+extend google.protobuf.MessageOptions {
+  optional DeprecationInfo message_deprecation = 1001;
+}
+
+// Extension for MethodOptions to provide enhanced deprecation metadata.
+extend google.protobuf.MethodOptions {
+  optional DeprecationInfo method_deprecation = 1001;
+}
+
+// Extension for ServiceOptions to provide enhanced deprecation metadata.
+extend google.protobuf.ServiceOptions {
+  optional DeprecationInfo service_deprecation = 1001;
+}
+
+// Extension for EnumOptions to provide enhanced deprecation metadata.
+extend google.protobuf.EnumOptions {
+  optional DeprecationInfo enum_deprecation = 1001;
+}
+
+// Structured metadata about a deprecation providing actionable migration
+// guidance and version information.
+//
+// Example usage:
+//   message User {
+//     int32 legacy_id = 1 [
+//       deprecated = true,
+//       (google.protobuf.deprecation) = {
+//         replacement: "uuid_id"
+//         removal_version: "v3.0"
+//         since_version: "v2.0"
+//         migration_guide: "Use uuid_id for better uniqueness guarantees."
+//         breaking: true
+//       }
+//     ];
+//     string uuid_id = 2;
+//   }
+message DeprecationInfo {
+  // The name of the field, method, or entity to use instead.
+  // For fields, this should be the name of another field in the same message.
+  // Example: "uuid_id"
+  optional string replacement = 1;
+
+  // Version when this entity will be removed.
+  // Recommended format: Semantic versioning (e.g., "v3.0", "2.0.0")
+  // Example: "v3.0"
+  optional string removal_version = 2;
+
+  // Version when this deprecation was introduced.
+  // This helps track the deprecation timeline.
+  // Example: "v2.0"
+  optional string since_version = 3;
+
+  // Human-readable migration instructions.
+  // Should explain how to update code that uses this deprecated entity.
+  // Can include commands, links, or step-by-step instructions.
+  // Example: "Use uuid_id for better uniqueness. Run migrate-tool --field=legacy_id"
+  optional string migration_guide = 4;
+
+  // Indicates if removing this entity is a breaking change.
+  // Breaking changes may require major version bumps and careful planning.
+  optional bool breaking = 5 [default = false];
+
+  // URL to detailed documentation about this deprecation.
+  // Can link to migration guides, ADRs, or other resources.
+  // Example: "https://docs.example.com/migrations/uuid-migration"
+  optional string documentation_url = 6;
+
+  // Custom key-value tags for tooling integration.
+  // Can be used for team ownership, tracking issues, or custom metadata.
+  // Example: {"team": "platform", "ticket": "PROJ-1234"}
+  map<string, string> tags = 7;
+}

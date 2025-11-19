@@ -477,6 +477,54 @@ void PyiGenerator::PrintMessage(const Descriptor& message_descriptor,
     if (IsPythonKeyword(field_des.name())) {
       continue;
     }
+
+    // Print deprecation comment if field is deprecated
+    if (field_des.options().deprecated()) {
+      // Try to extract enhanced deprecation info
+      const FieldOptions& field_options = field_des.options();
+      const Reflection* reflection = field_options.GetReflection();
+      std::vector<const FieldDescriptor*> fields;
+      reflection->ListFields(field_options, &fields);
+
+      std::string deprecation_comment = "# deprecated";
+      for (const FieldDescriptor* f : fields) {
+        if (f->is_extension() && f->number() == 1001 &&
+            f->message_type() != nullptr &&
+            f->message_type()->name() == "DeprecationInfo") {
+          const Message& deprecation_msg =
+              reflection->GetMessage(field_options, f);
+          const Reflection* dep_refl = deprecation_msg.GetReflection();
+          const Descriptor* dep_desc = deprecation_msg.GetDescriptor();
+
+          const FieldDescriptor* replacement_field =
+              dep_desc->FindFieldByName("replacement");
+          const FieldDescriptor* removal_field =
+              dep_desc->FindFieldByName("removal_version");
+
+          std::string info;
+          if (replacement_field &&
+              dep_refl->HasField(deprecation_msg, replacement_field)) {
+            info = dep_refl->GetString(deprecation_msg, replacement_field);
+            deprecation_comment =
+                absl::StrCat("# deprecated: use ", info, " instead");
+          }
+          if (removal_field &&
+              dep_refl->HasField(deprecation_msg, removal_field)) {
+            std::string version =
+                dep_refl->GetString(deprecation_msg, removal_field);
+            if (!info.empty()) {
+              absl::StrAppend(&deprecation_comment, ", removed in ", version);
+            } else {
+              deprecation_comment =
+                  absl::StrCat("# deprecated: removed in ", version);
+            }
+          }
+          break;
+        }
+      }
+      printer_->Print("$comment$\n", "comment", deprecation_comment);
+    }
+
     std::string field_type = "";
     if (field_des.is_map()) {
       const FieldDescriptor* key_des = field_des.message_type()->field(0);

@@ -54,15 +54,22 @@ inline absl::string_view ProtobufNamespace(const Options& opts) {
   return opts.opensource_runtime ? kOssNs : kGoogle3Ns;
 }
 
-inline std::string DeprecatedAttribute(const Options&,
-                                       const FieldDescriptor* d) {
-  return d->options().deprecated() ? "[[deprecated]] " : "";
-}
+// Returns the C++ deprecation attribute for a field.
+// If the field has enhanced deprecation metadata (via the deprecation
+// extension), the attribute will include a detailed message with replacement
+// field, version info, and migration guidance.
+std::string DeprecatedAttribute(const Options& options,
+                                const FieldDescriptor* d);
 
-inline std::string DeprecatedAttribute(const Options&,
-                                       const EnumValueDescriptor* d) {
-  return d->options().deprecated() ? "[[deprecated]] " : "";
-}
+// Returns the C++ deprecation attribute for an enum value.
+// If the enum value has enhanced deprecation metadata, the attribute will
+// include a detailed message.
+std::string DeprecatedAttribute(const Options& options,
+                                const EnumValueDescriptor* d);
+
+// Builds a deprecation message string from the field's deprecation metadata.
+// This is used internally by DeprecatedAttribute.
+std::string BuildDeprecationMessage(const FieldDescriptor* d);
 
 // Commonly-used separator comments.  Thick is a line of '=', thin is a line
 // of '-'.

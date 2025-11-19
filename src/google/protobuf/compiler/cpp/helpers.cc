@@ -242,6 +242,137 @@ bool HasV2Table(const Descriptor* descriptor, const Options& options) {
 
 }  // namespace
 
+// Helper to build a deprecation message from the deprecation extension.
+// Uses reflection to access the extension without requiring the generated
+// header.
+std::string BuildDeprecationMessage(const FieldDescriptor* field) {
+  const FieldOptions& options = field->options();
+
+  // Look for the deprecation extension in the field options
+  const Reflection* reflection = options.GetReflection();
+  const Descriptor* options_desc = options.GetDescriptor();
+
+  // Find the deprecation extension field by its number (1001)
+  const FieldDescriptor* deprecation_field = nullptr;
+  for (int i = 0; i < options_desc->extension_count(); ++i) {
+    const FieldDescriptor* ext = options_desc->extension(i);
+    if (ext->number() == 1001 && ext->name() == "deprecation") {
+      deprecation_field = ext;
+      break;
+    }
+  }
+
+  // Also check via extension range
+  std::vector<const FieldDescriptor*> fields;
+  reflection->ListFields(options, &fields);
+
+  std::string message;
+  bool has_deprecation_info = false;
+  std::string replacement;
+  std::string removal_version;
+  std::string since_version;
+  std::string migration_guide;
+
+  for (const FieldDescriptor* f : fields) {
+    if (f->is_extension() && f->number() == 1001 &&
+        f->message_type() != nullptr &&
+        f->message_type()->name() == "DeprecationInfo") {
+      // Found the deprecation extension
+      const Message& deprecation_msg = reflection->GetMessage(options, f);
+      const Reflection* dep_refl = deprecation_msg.GetReflection();
+      const Descriptor* dep_desc = deprecation_msg.GetDescriptor();
+
+      // Extract fields from DeprecationInfo
+      const FieldDescriptor* replacement_field =
+          dep_desc->FindFieldByName("replacement");
+      const FieldDescriptor* removal_field =
+          dep_desc->FindFieldByName("removal_version");
+      const FieldDescriptor* since_field =
+          dep_desc->FindFieldByName("since_version");
+      const FieldDescriptor* migration_field =
+          dep_desc->FindFieldByName("migration_guide");
+
+      if (replacement_field && dep_refl->HasField(deprecation_msg, replacement_field)) {
+        replacement = dep_refl->GetString(deprecation_msg, replacement_field);
+        has_deprecation_info = true;
+      }
+      if (removal_field && dep_refl->HasField(deprecation_msg, removal_field)) {
+        removal_version = dep_refl->GetString(deprecation_msg, removal_field);
+        has_deprecation_info = true;
+      }
+      if (since_field && dep_refl->HasField(deprecation_msg, since_field)) {
+        since_version = dep_refl->GetString(deprecation_msg, since_field);
+        has_deprecation_info = true;
+      }
+      if (migration_field && dep_refl->HasField(deprecation_msg, migration_field)) {
+        migration_guide = dep_refl->GetString(deprecation_msg, migration_field);
+        has_deprecation_info = true;
+      }
+      break;
+    }
+  }
+
+  if (!has_deprecation_info) {
+    return "";
+  }
+
+  // Build the deprecation message
+  std::vector<std::string> parts;
+
+  if (!since_version.empty() || !removal_version.empty()) {
+    std::string version_info;
+    if (!since_version.empty()) {
+      version_info = absl::StrCat("Deprecated since ", since_version);
+    }
+    if (!removal_version.empty()) {
+      if (version_info.empty()) {
+        version_info = absl::StrCat("Removed in ", removal_version);
+      } else {
+        absl::StrAppend(&version_info, ", removed in ", removal_version);
+      }
+    }
+    parts.push_back(version_info);
+  }
+
+  if (!replacement.empty()) {
+    parts.push_back(absl::StrCat("Use ", replacement, " instead"));
+  }
+
+  if (!migration_guide.empty()) {
+    parts.push_back(absl::StrCat("Migration: ", migration_guide));
+  }
+
+  return absl::StrJoin(parts, ". ");
+}
+
+std::string DeprecatedAttribute(const Options& /* options */,
+                                const FieldDescriptor* d) {
+  if (!d->options().deprecated()) {
+    return "";
+  }
+
+  std::string message = BuildDeprecationMessage(d);
+  if (message.empty()) {
+    return "[[deprecated]] ";
+  }
+
+  // Escape quotes in the message for the attribute string
+  std::string escaped_message = absl::StrReplaceAll(message, {{"\"", "\\\""}});
+  return absl::StrCat("[[deprecated(\"", escaped_message, "\")]] ");
+}
+
+std::string DeprecatedAttribute(const Options& /* options */,
+                                const EnumValueDescriptor* d) {
+  if (!d->options().deprecated()) {
+    return "";
+  }
+
+  // For enum values, we currently only support basic deprecation
+  // Enhanced deprecation metadata for enum values would require similar
+  // extension handling as fields
+  return "[[deprecated]] ";
+}
+
 bool IsLazy(const FieldDescriptor* field, const Options& options,
             MessageSCCAnalyzer* scc_analyzer) {
   return IsLazilyVerifiedLazy(field, options) ||

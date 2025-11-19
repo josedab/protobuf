@@ -251,6 +251,109 @@ void WriteFieldDocComment(io::Printer* printer, const FieldDescriptor* field,
   printer->Print(" */\n");
 }
 
+// Helper to build enhanced deprecation Javadoc from the deprecation extension.
+static void WriteEnhancedDeprecationJavadoc(io::Printer* printer,
+                                             const FieldDescriptor* field,
+                                             const Options options) {
+  const FieldOptions& field_options = field->options();
+
+  // Look for the deprecation extension in the field options
+  const Reflection* reflection = field_options.GetReflection();
+
+  std::vector<const FieldDescriptor*> fields;
+  reflection->ListFields(field_options, &fields);
+
+  std::string replacement;
+  std::string removal_version;
+  std::string since_version;
+  std::string migration_guide;
+  std::string documentation_url;
+  bool found_deprecation = false;
+
+  for (const FieldDescriptor* f : fields) {
+    if (f->is_extension() && f->number() == 1001 &&
+        f->message_type() != nullptr &&
+        f->message_type()->name() == "DeprecationInfo") {
+      // Found the deprecation extension
+      const Message& deprecation_msg = reflection->GetMessage(field_options, f);
+      const Reflection* dep_refl = deprecation_msg.GetReflection();
+      const Descriptor* dep_desc = deprecation_msg.GetDescriptor();
+
+      // Extract fields from DeprecationInfo
+      const FieldDescriptor* replacement_field =
+          dep_desc->FindFieldByName("replacement");
+      const FieldDescriptor* removal_field =
+          dep_desc->FindFieldByName("removal_version");
+      const FieldDescriptor* since_field =
+          dep_desc->FindFieldByName("since_version");
+      const FieldDescriptor* migration_field =
+          dep_desc->FindFieldByName("migration_guide");
+      const FieldDescriptor* doc_url_field =
+          dep_desc->FindFieldByName("documentation_url");
+
+      if (replacement_field &&
+          dep_refl->HasField(deprecation_msg, replacement_field)) {
+        replacement = dep_refl->GetString(deprecation_msg, replacement_field);
+        found_deprecation = true;
+      }
+      if (removal_field && dep_refl->HasField(deprecation_msg, removal_field)) {
+        removal_version = dep_refl->GetString(deprecation_msg, removal_field);
+        found_deprecation = true;
+      }
+      if (since_field && dep_refl->HasField(deprecation_msg, since_field)) {
+        since_version = dep_refl->GetString(deprecation_msg, since_field);
+        found_deprecation = true;
+      }
+      if (migration_field &&
+          dep_refl->HasField(deprecation_msg, migration_field)) {
+        migration_guide = dep_refl->GetString(deprecation_msg, migration_field);
+        found_deprecation = true;
+      }
+      if (doc_url_field && dep_refl->HasField(deprecation_msg, doc_url_field)) {
+        documentation_url =
+            dep_refl->GetString(deprecation_msg, doc_url_field);
+        found_deprecation = true;
+      }
+      break;
+    }
+  }
+
+  if (!found_deprecation) {
+    return;
+  }
+
+  // Write enhanced deprecation info
+  if (!since_version.empty() || !removal_version.empty()) {
+    std::string version_info;
+    if (!since_version.empty()) {
+      version_info = "Since " + since_version;
+    }
+    if (!removal_version.empty()) {
+      if (!version_info.empty()) {
+        version_info += ", removed in " + removal_version;
+      } else {
+        version_info = "Removed in " + removal_version;
+      }
+    }
+    printer->Print(" *     $version$\n", "version", EscapeJavadoc(version_info));
+  }
+
+  if (!replacement.empty()) {
+    printer->Print(" *     Use {@link #get$replacement$()} instead.\n",
+                   "replacement", replacement);
+  }
+
+  if (!migration_guide.empty()) {
+    printer->Print(" *     Migration: $guide$\n", "guide",
+                   EscapeJavadoc(migration_guide));
+  }
+
+  if (!documentation_url.empty()) {
+    printer->Print(" *     See: $url$\n", "url",
+                   EscapeJavadoc(documentation_url));
+  }
+}
+
 void WriteDeprecatedJavadoc(io::Printer* printer, const FieldDescriptor* field,
                             const FieldAccessorType type,
                             const Options options) {
@@ -266,6 +369,10 @@ void WriteDeprecatedJavadoc(io::Printer* printer, const FieldDescriptor* field,
 
   printer->Print(" * @deprecated $name$ is deprecated.\n", "name",
                  field->full_name());
+
+  // Write enhanced deprecation metadata if available
+  WriteEnhancedDeprecationJavadoc(printer, field, options);
+
   if (!options.strip_nonfunctional_codegen) {
     printer->Print(" *     See $file$;l=$line$\n", "file",
                    field->file()->name(), "line", startLine);

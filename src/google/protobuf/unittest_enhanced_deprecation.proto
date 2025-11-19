@@ -1,0 +1,103 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2024 Google LLC.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+// Test proto file for enhanced field deprecation feature.
+// This demonstrates the use of the deprecation extension to provide
+// structured metadata for deprecated fields.
+
+syntax = "proto2";
+
+package protobuf_unittest;
+
+import "google/protobuf/deprecation.proto";
+
+option java_package = "com.google.protobuf";
+option java_outer_classname = "EnhancedDeprecationTestProto";
+
+// Test message with various deprecation scenarios.
+message EnhancedDeprecationTest {
+  // Field with full deprecation metadata
+  optional int32 legacy_id = 1 [
+    deprecated = true,
+    (google.protobuf.deprecation) = {
+      replacement: "uuid_id"
+      removal_version: "v3.0"
+      since_version: "v2.0"
+      migration_guide: "Use uuid_id for better uniqueness guarantees. "
+                       "Run migrate-tool --field=legacy_id to update."
+      breaking: true
+      documentation_url: "https://docs.example.com/migrations/uuid"
+    }
+  ];
+
+  // The replacement field
+  optional string uuid_id = 2;
+
+  // Field with partial deprecation metadata (only replacement)
+  optional string old_email = 3 [
+    deprecated = true,
+    (google.protobuf.deprecation) = {
+      replacement: "emails"
+      migration_guide: "Migrate to emails repeated field for multi-email support."
+    }
+  ];
+
+  // The replacement field for old_email
+  repeated string emails = 4;
+
+  // Field with only version information
+  optional int32 deprecated_count = 5 [
+    deprecated = true,
+    (google.protobuf.deprecation) = {
+      removal_version: "v4.0"
+      since_version: "v3.0"
+    }
+  ];
+
+  // Field with custom tags for tooling
+  optional string tagged_field = 6 [
+    deprecated = true,
+    (google.protobuf.deprecation) = {
+      replacement: "new_tagged_field"
+      tags: [
+        { key: "team" value: "platform" },
+        { key: "ticket" value: "PROJ-1234" }
+      ]
+    }
+  ];
+
+  optional string new_tagged_field = 7;
+
+  // Regular deprecated field without enhanced metadata (backward compatibility)
+  optional string basic_deprecated = 8 [deprecated = true];
+
+  // Non-deprecated field for comparison
+  optional string normal_field = 9;
+}
+
+// Test message for nested deprecation
+message NestedDeprecationTest {
+  message InnerMessage {
+    optional int32 deprecated_inner = 1 [
+      deprecated = true,
+      (google.protobuf.deprecation) = {
+        replacement: "new_inner"
+        removal_version: "v2.0"
+      }
+    ];
+    optional int32 new_inner = 2;
+  }
+
+  optional InnerMessage inner = 1;
+}
+
+// Test enum with deprecation (extension available for enum values)
+enum DeprecatedEnum {
+  UNKNOWN = 0;
+  OLD_VALUE = 1 [deprecated = true];
+  NEW_VALUE = 2;
+}
