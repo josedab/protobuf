@@ -2583,6 +2583,84 @@ proto_library(
 )
 
 ################################################################################
+# Security Hardening
+################################################################################
+
+cc_library(
+    name = "parse_options",
+    hdrs = ["parse_options.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = ["//:__subpackages__"],
+    deps = [
+        ":port",
+        "@abseil-cpp//absl/time",
+    ],
+)
+
+cc_library(
+    name = "memory_tracker",
+    hdrs = ["memory_tracker.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = ["//:__subpackages__"],
+    deps = [
+        ":port",
+        "@abseil-cpp//absl/base:thread_annotations",
+    ],
+)
+
+cc_library(
+    name = "security_context",
+    srcs = ["security_context.cc"],
+    hdrs = ["security_context.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = ["//:__subpackages__"],
+    deps = [
+        ":memory_tracker",
+        ":parse_options",
+        ":port",
+        "//third_party/utf8_range:utf8_validity",
+        "@abseil-cpp//absl/log:absl_log",
+        "@abseil-cpp//absl/strings",
+        "@abseil-cpp//absl/time",
+    ],
+)
+
+cc_library(
+    name = "secure_parsing",
+    srcs = ["secure_parsing.cc"],
+    hdrs = ["secure_parsing.h"],
+    copts = COPTS,
+    strip_include_prefix = "/src",
+    visibility = ["//:__subpackages__"],
+    deps = [
+        ":parse_options",
+        ":port",
+        ":protobuf_lite",
+        ":security_context",
+        "//src/google/protobuf/io",
+        "@abseil-cpp//absl/strings",
+    ],
+)
+
+cc_test(
+    name = "secure_parsing_test",
+    srcs = ["secure_parsing_test.cc"],
+    copts = COPTS,
+    deps = [
+        ":memory_tracker",
+        ":parse_options",
+        ":secure_parsing",
+        ":security_context",
+        "//src/google/protobuf:test_protos",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
+################################################################################
 # Packaging rules
 ################################################################################
 
