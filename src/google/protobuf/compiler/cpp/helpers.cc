@@ -2202,6 +2202,39 @@ bool NeedsPostLoopHandler(const Descriptor* descriptor,
   return false;
 }
 
+// RFC-0013: Enhanced oneof semantics helper functions
+
+bool OneofHasRepeatedFields(const OneofDescriptor* oneof) {
+  for (int i = 0; i < oneof->field_count(); ++i) {
+    if (oneof->field(i)->is_repeated()) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool OneofHasUnsetTracking(const OneofDescriptor* oneof) {
+  return oneof->options().track_unset();
+}
+
+bool OneofIsRequired(const OneofDescriptor* oneof) {
+  return oneof->options().required();
+}
+
+bool OneofIsNested(const OneofDescriptor* oneof) {
+  // Check if the oneof has a parent_oneof_index set (not -1)
+  // Note: This requires the proto reflection to access the field
+  // For now, we'll return false as the proto needs to be recompiled
+  // with the new parent_oneof_index field
+  return false;  // TODO: Implement when descriptor is updated
+}
+
+int GetParentOneofIndex(const OneofDescriptor* oneof) {
+  // This would return the parent_oneof_index from the proto
+  // For now, return -1 (no parent)
+  return -1;  // TODO: Implement when descriptor is updated
+}
+
 }  // namespace cpp
 }  // namespace compiler
 }  // namespace protobuf

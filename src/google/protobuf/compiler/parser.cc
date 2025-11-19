@@ -2070,15 +2070,40 @@ bool Parser::ParseOneof(OneofDescriptorProto* oneof_decl,
       continue;
     }
 
-    // Print a nice error if the user accidentally tries to place a label
-    // on an individual member of a oneof.
-    if (LookingAt("required") || LookingAt("optional") ||
-        LookingAt("repeated")) {
+    // RFC-0013: Support nested oneofs
+    if (LookingAt("oneof")) {
+      int nested_oneof_index = containing_type->oneof_decl_size();
+
+      LocationRecorder nested_oneof_location(
+          containing_type_location, DescriptorProto::kOneofDeclFieldNumber,
+          nested_oneof_index);
+
+      OneofDescriptorProto* nested_oneof_decl =
+          containing_type->add_oneof_decl();
+      // Set the parent relationship to track nesting
+      nested_oneof_decl->set_parent_oneof_index(oneof_index);
+
+      if (!ParseOneof(nested_oneof_decl, containing_type, nested_oneof_index,
+                      nested_oneof_location, containing_type_location,
+                      containing_file)) {
+        return false;
+      }
+      continue;
+    }
+
+    // Print a nice error if the user accidentally tries to place required
+    // or optional labels on individual members of a oneof.
+    // Repeated fields are now allowed in oneofs (RFC-0013).
+    bool is_repeated_in_oneof = false;
+    if (LookingAt("required") || LookingAt("optional")) {
       RecordError(
-          "Fields in oneofs must not have labels (required / optional "
-          "/ repeated).");
+          "Fields in oneofs must not have labels (required / optional).");
       // We can continue parsing here because we understand what the user
       // meant.  The error report will still make parsing fail overall.
+      input_->Next();
+    } else if (LookingAt("repeated")) {
+      // RFC-0013: Allow repeated fields in oneofs
+      is_repeated_in_oneof = true;
       input_->Next();
     }
 
@@ -2087,7 +2112,12 @@ bool Parser::ParseOneof(OneofDescriptorProto* oneof_decl,
                                     containing_type->field_size());
 
     FieldDescriptorProto* field = containing_type->add_field();
-    field->set_label(FieldDescriptorProto::LABEL_OPTIONAL);
+    // RFC-0013: Set label based on whether field is repeated
+    if (is_repeated_in_oneof) {
+      field->set_label(FieldDescriptorProto::LABEL_REPEATED);
+    } else {
+      field->set_label(FieldDescriptorProto::LABEL_OPTIONAL);
+    }
     field->set_oneof_index(oneof_index);
 
     if (!ParseMessageFieldNoLabel(field, containing_type->mutable_nested_type(),

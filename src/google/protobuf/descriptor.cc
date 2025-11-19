@@ -7931,12 +7931,15 @@ void DescriptorBuilder::CrossLinkField(FieldDescriptor* field,
   }
 
   if (field->containing_oneof() != nullptr) {
-    if (field->label_ != FieldDescriptor::LABEL_OPTIONAL) {
+    // RFC-0013: Allow LABEL_OPTIONAL or LABEL_REPEATED in oneofs
+    if (field->label_ != FieldDescriptor::LABEL_OPTIONAL &&
+        field->label_ != FieldDescriptor::LABEL_REPEATED) {
       // Note that this error will never happen when parsing .proto files.
       // It can only happen if you manually construct a FileDescriptorProto
       // that is incorrect.
       AddError(field->full_name(), proto, DescriptorPool::ErrorCollector::NAME,
-               "Fields of oneofs must themselves have label LABEL_OPTIONAL.");
+               "Fields of oneofs must have label LABEL_OPTIONAL or "
+               "LABEL_REPEATED.");
     }
   }
 

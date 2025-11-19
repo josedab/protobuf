@@ -2552,6 +2552,21 @@ cc_test(
     ],
 )
 
+cc_test(
+    name = "enhanced_oneof_unittest",
+    srcs = ["enhanced_oneof_unittest.cc"],
+    copts = COPTS,
+    deps = [
+        ":cc_test_protos",
+        ":protobuf",
+        "//src/google/protobuf/compiler:parser",
+        "//src/google/protobuf/io",
+        "//src/google/protobuf/io:tokenizer",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
 ################################################################################
 # Helper targets for Kotlin tests
 ################################################################################

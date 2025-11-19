@@ -1,0 +1,145 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+// RFC-0013: Enhanced Oneof Semantics Test Proto
+
+syntax = "proto2";
+
+package protobuf_unittest;
+
+option cc_enable_arenas = true;
+
+// Test 1: Repeated fields in oneof
+message RequestWithRepeatedOneof {
+  oneof selection {
+    repeated int64 ids = 1;      // RFC-0013: repeated in oneof
+    string filter_query = 2;
+  }
+}
+
+// Test 2: Multiple repeated fields in same oneof
+message MultiRepeatedOneof {
+  oneof data {
+    repeated string names = 1;
+    repeated int32 numbers = 2;
+    bool flag = 3;
+  }
+}
+
+// Test 3: Nested oneofs
+message ShapeWithNestedOneof {
+  message Circle {
+    optional float radius = 1;
+  }
+
+  message Rectangle {
+    optional float width = 1;
+    optional float height = 2;
+  }
+
+  message Square {
+    optional float side = 1;
+  }
+
+  message Triangle {
+    optional float base = 1;
+    optional float height = 2;
+  }
+
+  oneof shape_type {
+    Circle circle = 1;
+    oneof quadrilateral {
+      Rectangle rectangle = 2;
+      Square square = 3;
+    }
+    Triangle triangle = 4;
+  }
+}
+
+// Test 4: Unset tracking
+message ConfigWithUnsetTracking {
+  oneof mode {
+    option (track_unset) = true;
+
+    int32 timeout_ms = 1;
+    bool use_default = 2;
+  }
+}
+
+// Test 5: Required oneof
+message ActionWithRequiredOneof {
+  message CreateAction {
+    optional string name = 1;
+  }
+
+  message UpdateAction {
+    optional string id = 1;
+    optional string name = 2;
+  }
+
+  message DeleteAction {
+    optional string id = 1;
+  }
+
+  oneof action_type {
+    option (required) = true;
+
+    CreateAction create = 1;
+    UpdateAction update = 2;
+    DeleteAction delete = 3;
+  }
+}
+
+// Test 6: Combined features - repeated in oneof with required
+message SearchRequest {
+  oneof query {
+    option (required) = true;
+
+    repeated string keywords = 1;
+    string exact_match = 2;
+    int32 id = 3;
+  }
+}
+
+// Test 7: Deeply nested oneofs
+message ComplexShape {
+  oneof outer {
+    string name = 1;
+    oneof polygon {
+      int32 triangle = 2;
+      oneof quadrilateral {
+        int32 rectangle = 3;
+        int32 square = 4;
+      }
+    }
+  }
+}
+
+// Test 8: Oneof with message and repeated message
+message ContainerOneof {
+  message Item {
+    optional string value = 1;
+  }
+
+  oneof contents {
+    Item single_item = 1;
+    repeated Item multiple_items = 2;
+    string raw_data = 3;
+  }
+}
+
+// Test 9: All options together
+message FullFeaturedOneof {
+  oneof choice {
+    option (track_unset) = true;
+    option (required) = true;
+
+    repeated int32 numbers = 1;
+    string text = 2;
+    bytes data = 3;
+  }
+}

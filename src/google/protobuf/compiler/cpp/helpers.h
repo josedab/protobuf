@@ -1316,6 +1316,23 @@ enum InitPriority {
   kInitPriority102,
 };
 
+// RFC-0013: Enhanced oneof semantics helper functions
+
+// Check if a oneof contains any repeated fields
+bool OneofHasRepeatedFields(const OneofDescriptor* oneof);
+
+// Check if a oneof has unset tracking enabled
+bool OneofHasUnsetTracking(const OneofDescriptor* oneof);
+
+// Check if a oneof is required
+bool OneofIsRequired(const OneofDescriptor* oneof);
+
+// Check if a oneof is nested (has a parent oneof)
+bool OneofIsNested(const OneofDescriptor* oneof);
+
+// Get the parent oneof index for a nested oneof (-1 if not nested)
+int GetParentOneofIndex(const OneofDescriptor* oneof);
+
 }  // namespace cpp
 }  // namespace compiler
 }  // namespace protobuf
