@@ -186,6 +186,42 @@ message DescriptorProto {
 
   // Support for `export` and `local` keywords on enums.
   optional SymbolVisibility visibility = 11;
+
+  // Generic/Template message support
+  // Type parameters for generic messages (e.g., message Result<T, E> { ... })
+  repeated GenericTypeParameter type_parameter = 12;
+
+  // For instantiated generic messages, this points to the original generic
+  // message definition
+  optional string generic_source_name = 13;
+
+  // Type arguments used to instantiate this message from a generic template
+  repeated GenericTypeArgument type_argument = 14;
+}
+
+// Describes a type parameter for a generic message.
+message GenericTypeParameter {
+  // The name of the type parameter (e.g., "T", "E")
+  optional string name = 1;
+
+  // Optional constraint for the type parameter
+  // Can be "message" to require a message type, or a specific type name
+  optional string constraint = 2;
+
+  // Default type if not specified during instantiation
+  optional string default_type = 3;
+}
+
+// Describes a type argument used to instantiate a generic message.
+message GenericTypeArgument {
+  // The name of the type parameter this argument corresponds to
+  optional string parameter_name = 1;
+
+  // The actual type used (e.g., ".package.User")
+  optional string type_name = 2;
+
+  // For primitive types
+  optional FieldDescriptorProto.Type type = 3;
 }
 
 message ExtensionRangeOptions {
@@ -347,6 +383,13 @@ message FieldDescriptorProto {
   // Proto2 optional fields do not set this flag, because they already indicate
   // optional with `LABEL_OPTIONAL`.
   optional bool proto3_optional = 17;
+
+  // Generic type support for fields
+  // If this field's type is a generic type parameter, this is the parameter name
+  optional string generic_type_parameter = 18;
+
+  // Type arguments when this field uses a generic type (e.g., Result<User>)
+  repeated GenericTypeArgument generic_type_arguments = 19;
 }
 
 // Describes a oneof.
@@ -421,6 +464,12 @@ message MethodDescriptorProto {
   optional bool client_streaming = 5 [default = false];
   // Identifies if server streams multiple server messages
   optional bool server_streaming = 6 [default = false];
+
+  // Generic type arguments for the input type (e.g., Request<User>)
+  repeated GenericTypeArgument input_type_arguments = 7;
+
+  // Generic type arguments for the output type (e.g., Result<User>)
+  repeated GenericTypeArgument output_type_arguments = 8;
 }
 
 // ===================================================================

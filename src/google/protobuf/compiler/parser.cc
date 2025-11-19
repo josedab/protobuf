@@ -805,6 +805,10 @@ bool Parser::ParseMessageDefinition(
                                   DescriptorPool::ErrorCollector::NAME);
     DO(ConsumeIdentifier(message->mutable_name(), "Expected message name."));
   }
+  // Check for generic type parameters (e.g., message Result<T, E> { ... })
+  if (LookingAt("<")) {
+    DO(ParseGenericTypeParameters(message, message_location));
+  }
   DO(ParseMessageBlock(message, message_location, containing_file));
 
   if (syntax_identifier_ == "proto3") {
@@ -1031,6 +1035,10 @@ bool Parser::ParseMessageFieldNoLabel(
       } else {
         location.AddPath(FieldDescriptorProto::kTypeNameFieldNumber);
         field->set_type_name(type_name);
+        // Check for generic type arguments (e.g., Result<User>)
+        if (LookingAt("<")) {
+          DO(ParseGenericTypeArguments(field, field_location));
+        }
       }
     }
   }
@@ -1211,6 +1219,150 @@ void Parser::GenerateMapEntry(const MapField& map_field,
       *value_field->mutable_options()->add_uninterpreted_option() = option;
     }
   }
+}
+
+// Parse generic type parameters for a message definition.
+// Handles syntax like: message Result<T, E = string> { ... }
+bool Parser::ParseGenericTypeParameters(
+    DescriptorProto* message,
+    const LocationRecorder& message_location) {
+  DO(Consume("<"));
+
+  do {
+    GenericTypeParameter* param = message->add_type_parameter();
+
+    // Parse parameter name
+    std::string param_name;
+    DO(ConsumeIdentifier(&param_name, "Expected type parameter name."));
+    param->set_name(param_name);
+
+    // Check for constraint (e.g., T: message or T: SomeInterface)
+    if (TryConsume(":")) {
+      std::string constraint;
+      DO(ConsumeIdentifier(&constraint, "Expected type constraint."));
+      param->set_constraint(constraint);
+    }
+
+    // Check for default type (e.g., E = string)
+    if (TryConsume("=")) {
+      std::string default_type;
+      // Could be a qualified name like google.protobuf.Empty
+      DO(ConsumeIdentifier(&default_type, "Expected default type."));
+      while (TryConsume(".")) {
+        std::string part;
+        DO(ConsumeIdentifier(&part, "Expected type name part."));
+        default_type += "." + part;
+      }
+      param->set_default_type(default_type);
+    }
+  } while (TryConsume(","));
+
+  DO(Consume(">"));
+  return true;
+}
+
+// Parse generic type arguments in a type reference.
+// Handles syntax like: Result<User> or Result<User, ErrorCode>
+bool Parser::ParseGenericTypeArguments(
+    FieldDescriptorProto* field,
+    const LocationRecorder& field_location) {
+  DO(Consume("<"));
+
+  do {
+    GenericTypeArgument* arg = field->add_generic_type_arguments();
+
+    // Parse the type argument
+    std::string type_name;
+    DO(ConsumeIdentifier(&type_name, "Expected type argument."));
+
+    // Handle qualified type names
+    while (TryConsume(".")) {
+      std::string part;
+      DO(ConsumeIdentifier(&part, "Expected type name part."));
+      type_name += "." + part;
+    }
+
+    // Check for nested generic types (e.g., Result<List<User>>)
+    if (LookingAt("<")) {
+      // For now, we append the generic args as part of the type name
+      // In a full implementation, we would recurse
+      type_name += "<";
+      DO(Consume("<"));
+      int depth = 1;
+      while (depth > 0) {
+        if (LookingAt("<")) {
+          type_name += "<";
+          input_->Next();
+          depth++;
+        } else if (LookingAt(">")) {
+          type_name += ">";
+          input_->Next();
+          depth--;
+        } else if (LookingAt(",")) {
+          type_name += ",";
+          input_->Next();
+        } else {
+          type_name += input_->current().text;
+          input_->Next();
+        }
+      }
+    }
+
+    arg->set_type_name(type_name);
+  } while (TryConsume(","));
+
+  DO(Consume(">"));
+  return true;
+}
+
+// Parse generic type arguments for RPC input/output types.
+bool Parser::ParseGenericTypeArgumentsForMethod(
+    RepeatedPtrField<GenericTypeArgument>* arguments) {
+  DO(Consume("<"));
+
+  do {
+    GenericTypeArgument* arg = arguments->Add();
+
+    // Parse the type argument
+    std::string type_name;
+    DO(ConsumeIdentifier(&type_name, "Expected type argument."));
+
+    // Handle qualified type names
+    while (TryConsume(".")) {
+      std::string part;
+      DO(ConsumeIdentifier(&part, "Expected type name part."));
+      type_name += "." + part;
+    }
+
+    // Handle nested generics
+    if (LookingAt("<")) {
+      type_name += "<";
+      DO(Consume("<"));
+      int depth = 1;
+      while (depth > 0) {
+        if (LookingAt("<")) {
+          type_name += "<";
+          input_->Next();
+          depth++;
+        } else if (LookingAt(">")) {
+          type_name += ">";
+          input_->Next();
+          depth--;
+        } else if (LookingAt(",")) {
+          type_name += ",";
+          input_->Next();
+        } else {
+          type_name += input_->current().text;
+          input_->Next();
+        }
+      }
+    }
+
+    arg->set_type_name(type_name);
+  } while (TryConsume(","));
+
+  DO(Consume(">"));
+  return true;
 }
 
 bool Parser::ParseFieldOptions(FieldDescriptorProto* field,
@@ -2316,6 +2468,11 @@ bool Parser::ParseServiceMethod(MethodDescriptorProto* method,
     location.RecordLegacyLocation(method,
                                   DescriptorPool::ErrorCollector::INPUT_TYPE);
     DO(ParseUserDefinedType(method->mutable_input_type()));
+    // Check for generic type arguments (e.g., Request<User>)
+    if (LookingAt("<")) {
+      DO(ParseGenericTypeArgumentsForMethod(
+          method->mutable_input_type_arguments()));
+    }
   }
   DO(Consume(")"));
 
@@ -2336,6 +2493,11 @@ bool Parser::ParseServiceMethod(MethodDescriptorProto* method,
     location.RecordLegacyLocation(method,
                                   DescriptorPool::ErrorCollector::OUTPUT_TYPE);
     DO(ParseUserDefinedType(method->mutable_output_type()));
+    // Check for generic type arguments (e.g., Result<User>)
+    if (LookingAt("<")) {
+      DO(ParseGenericTypeArgumentsForMethod(
+          method->mutable_output_type_arguments()));
+    }
   }
   DO(Consume(")"));
 

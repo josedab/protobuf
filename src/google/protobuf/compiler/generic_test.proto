@@ -1,0 +1,110 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+// Test file for generic/template message syntax.
+
+syntax = "proto3";
+
+package protobuf.compiler.test;
+
+// Simple generic message with one type parameter
+message Container<T> {
+  T value = 1;
+}
+
+// Generic message with two type parameters
+message KeyValue<K, V> {
+  K key = 1;
+  V value = 2;
+}
+
+// Generic message with default type parameter
+message Result<T, E = string> {
+  oneof result {
+    E error = 1;
+    T success = 2;
+  }
+}
+
+// Generic message with constraint
+message MessageWrapper<T: message> {
+  T wrapped = 1;
+}
+
+// Non-generic messages for instantiation testing
+message User {
+  string name = 1;
+  string email = 2;
+}
+
+message Order {
+  string id = 1;
+  int32 amount = 2;
+}
+
+message ErrorCode {
+  int32 code = 1;
+  string message = 2;
+}
+
+// Messages that use generic types
+message Dashboard {
+  // Instantiate Container with User
+  Container<User> current_user = 1;
+
+  // Instantiate KeyValue with string and int32
+  KeyValue<string, int32> settings = 2;
+
+  // Instantiate Result with default error type
+  Result<User> user_result = 3;
+
+  // Instantiate Result with custom error type
+  Result<Order, ErrorCode> order_result = 4;
+}
+
+// Service using generic types
+service UserService {
+  // RPC with generic return type
+  rpc GetUser(GetUserRequest) returns (Result<User>);
+
+  // RPC with nested generic return type
+  rpc ListUsers(ListUsersRequest) returns (Result<Paginated<User>>);
+
+  // RPC with multiple generic parameters
+  rpc CreateUser(CreateUserRequest) returns (Result<User, ErrorCode>);
+}
+
+// Request messages
+message GetUserRequest {
+  string user_id = 1;
+}
+
+message ListUsersRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+}
+
+message CreateUserRequest {
+  string name = 1;
+  string email = 2;
+}
+
+// Paginated result type
+message Paginated<T> {
+  repeated T items = 1;
+  int32 total = 2;
+  string next_token = 3;
+}
+
+// Nested generic usage
+message NestedGenerics {
+  // Generic containing generic
+  Container<Container<User>> nested = 1;
+
+  // Result containing paginated
+  Result<Paginated<Order>> paginated_result = 2;
+}

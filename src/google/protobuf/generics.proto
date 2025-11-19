@@ -1,0 +1,109 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2008 Google Inc.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+// Standard library of generic/template message types.
+// These provide common patterns that can be reused across projects.
+
+syntax = "proto3";
+
+package google.protobuf;
+
+option java_package = "com.google.protobuf";
+option java_outer_classname = "GenericsProto";
+option go_package = "google.golang.org/protobuf/types/known/genericspb";
+option cc_enable_arenas = true;
+option objc_class_prefix = "GPB";
+
+import "google/protobuf/any.proto";
+
+// Result type for operations that can succeed or fail.
+// Usage: Result<User> for a successful user or error string.
+// Usage: Result<User, ErrorCode> for a custom error type.
+message Result<T, E = string> {
+  oneof result {
+    E error = 1;
+    T success = 2;
+  }
+}
+
+// Optional wrapper for explicit null handling.
+// Usage: Optional<Config> for an optional configuration.
+message Optional<T> {
+  oneof value {
+    bool is_null = 1;
+    T value = 2;
+  }
+}
+
+// List/collection type for repeated items.
+// Usage: List<User> for a list of users.
+message List<T> {
+  repeated T items = 1;
+}
+
+// Paginated list for large collections.
+// Usage: Paginated<User> for paginated user results.
+message Paginated<T> {
+  repeated T items = 1;
+  int32 total_count = 2;
+  string next_page_token = 3;
+  string previous_page_token = 4;
+}
+
+// Either type for values that can be one of two types.
+// Usage: Either<string, int32> for a value that's either a string or integer.
+message Either<L, R> {
+  oneof value {
+    L left = 1;
+    R right = 2;
+  }
+}
+
+// Pair type for key-value or two-item tuples.
+// Usage: Pair<string, User> for a named user.
+message Pair<K, V> {
+  K first = 1;
+  V second = 2;
+}
+
+// Triple type for three-item tuples.
+// Usage: Triple<string, int32, bool> for a three-value tuple.
+message Triple<A, B, C> {
+  A first = 1;
+  B second = 2;
+  C third = 3;
+}
+
+// Wrapper with metadata for timestamped values.
+// Usage: Timestamped<Config> for a configuration with timestamp.
+message Timestamped<T> {
+  T value = 1;
+  int64 timestamp_millis = 2;
+}
+
+// Wrapper with metadata for versioned values.
+// Usage: Versioned<Document> for a versioned document.
+message Versioned<T> {
+  T value = 1;
+  int64 version = 2;
+  string etag = 3;
+}
+
+// Wrapper for tagged unions.
+// Usage: Tagged<string, User> for a tagged user with a type discriminator.
+message Tagged<Tag, T> {
+  Tag tag = 1;
+  T value = 2;
+}
+
+// Batch result for bulk operations.
+// Usage: BatchResult<User> for bulk user creation results.
+message BatchResult<T> {
+  repeated T succeeded = 1;
+  repeated Result<T> failed = 2;
+  int32 total_processed = 3;
+}

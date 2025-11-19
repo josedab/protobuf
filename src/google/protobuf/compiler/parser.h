@@ -406,6 +406,20 @@ class PROTOBUF_EXPORT Parser final {
   bool ParseMapType(MapField* map_field, FieldDescriptorProto* field,
                     LocationRecorder& type_name_location);
 
+  // Parse generic type parameters for a message definition.
+  // Handles syntax like: message Result<T, E = string> { ... }
+  bool ParseGenericTypeParameters(DescriptorProto* message,
+                                  const LocationRecorder& message_location);
+
+  // Parse generic type arguments in a type reference.
+  // Handles syntax like: Result<User> or Result<User, ErrorCode>
+  bool ParseGenericTypeArguments(FieldDescriptorProto* field,
+                                 const LocationRecorder& field_location);
+
+  // Parse generic type arguments for RPC input/output types.
+  bool ParseGenericTypeArgumentsForMethod(
+      RepeatedPtrField<GenericTypeArgument>* arguments);
+
   // Parse an "extensions" declaration.
   bool ParseExtensions(DescriptorProto* message,
                        const LocationRecorder& extensions_location,
