@@ -1,0 +1,185 @@
+name: Performance Benchmarks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  deployments: write
+
+jobs:
+  benchmark-cpp:
+    name: C++ Benchmarks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Bazel cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/bazel
+          key: bazel-benchmark-cpp-${{ runner.os }}-${{ hashFiles('WORKSPACE', 'MODULE.bazel') }}
+          restore-keys: |
+            bazel-benchmark-cpp-${{ runner.os }}-
+
+      - name: Build benchmarks
+        run: bazel build //benchmarks:benchmark_messages -c opt
+
+      - name: Run C++ benchmarks
+        run: |
+          ./bazel-bin/benchmarks/benchmark_messages \
+            --benchmark_format=json \
+            --benchmark_out=benchmark_results.json \
+            --benchmark_repetitions=3 \
+            --benchmark_report_aggregates_only=true
+
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v4
+        with:
+          name: cpp-benchmark-results
+          path: benchmark_results.json
+
+      - name: Store benchmark result
+        uses: benchmark-action/github-action-benchmark@v1
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+        with:
+          tool: 'googlecpp'
+          output-file-path: benchmark_results.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: ${{ github.event_name == 'push' }}
+          alert-threshold: '105%'
+          comment-on-alert: true
+          fail-on-alert: true
+          alert-comment-cc-users: '@protobuf/performance'
+          benchmark-data-dir-path: dev/bench
+
+      - name: Compare with baseline (PR only)
+        if: github.event_name == 'pull_request'
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          tool: 'googlecpp'
+          output-file-path: benchmark_results.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          comment-always: true
+          alert-threshold: '105%'
+          fail-on-alert: false
+          benchmark-data-dir-path: dev/bench
+
+  benchmark-cpp-extended:
+    name: C++ Extended Benchmarks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Bazel cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/bazel
+          key: bazel-benchmark-cpp-ext-${{ runner.os }}-${{ hashFiles('WORKSPACE', 'MODULE.bazel') }}
+          restore-keys: |
+            bazel-benchmark-cpp-ext-${{ runner.os }}-
+
+      - name: Build extended benchmarks
+        run: bazel build //benchmarks:benchmark -c opt
+
+      - name: Run extended benchmarks
+        run: |
+          ./bazel-bin/benchmarks/benchmark \
+            --benchmark_format=json \
+            --benchmark_out=benchmark_extended_results.json \
+            --benchmark_repetitions=3 \
+            --benchmark_report_aggregates_only=true
+
+      - name: Upload extended benchmark results
+        uses: actions/upload-artifact@v4
+        with:
+          name: cpp-extended-benchmark-results
+          path: benchmark_extended_results.json
+
+  benchmark-summary:
+    name: Benchmark Summary
+    needs: [benchmark-cpp, benchmark-cpp-extended]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Generate summary
+        run: |
+          echo "## Performance Benchmark Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ -f "artifacts/cpp-benchmark-results/benchmark_results.json" ]; then
+            echo "### C++ Message Benchmarks" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo '```json' >> $GITHUB_STEP_SUMMARY
+            cat artifacts/cpp-benchmark-results/benchmark_results.json | head -100 >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ -f "artifacts/cpp-extended-benchmark-results/benchmark_extended_results.json" ]; then
+            echo "### C++ Extended Benchmarks" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Extended benchmarks completed successfully." >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "For detailed results and trends, see the [benchmark dashboard](https://protocolbuffers.github.io/protobuf/dev/bench/)." >> $GITHUB_STEP_SUMMARY
+
+  # Nightly comprehensive benchmarks
+  nightly-benchmark:
+    name: Nightly Comprehensive Benchmarks
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.event.inputs.run_nightly == 'true')
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Bazel cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/bazel
+          key: bazel-benchmark-nightly-${{ runner.os }}-${{ hashFiles('WORKSPACE', 'MODULE.bazel') }}
+          restore-keys: |
+            bazel-benchmark-nightly-${{ runner.os }}-
+
+      - name: Build all benchmarks
+        run: bazel build //benchmarks:all -c opt
+
+      - name: Run comprehensive benchmarks
+        run: |
+          # Run message benchmarks with more iterations
+          ./bazel-bin/benchmarks/benchmark_messages \
+            --benchmark_format=json \
+            --benchmark_out=nightly_messages.json \
+            --benchmark_repetitions=5 \
+            --benchmark_min_time=2s
+
+          # Run extended benchmarks
+          ./bazel-bin/benchmarks/benchmark \
+            --benchmark_format=json \
+            --benchmark_out=nightly_extended.json \
+            --benchmark_repetitions=5 \
+            --benchmark_min_time=2s
+
+      - name: Upload nightly results
+        uses: actions/upload-artifact@v4
+        with:
+          name: nightly-benchmark-results
+          path: |
+            nightly_messages.json
+            nightly_extended.json

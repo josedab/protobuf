@@ -1,0 +1,131 @@
+// Protocol Buffers - Google's data interchange format
+// Copyright 2023 Google LLC.  All rights reserved.
+//
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file or at
+// https://developers.google.com/open-source/licenses/bsd
+
+// Benchmark message definitions for performance testing.
+// These messages are designed to represent common use cases
+// and provide meaningful performance measurements.
+
+syntax = "proto3";
+
+package benchmarks;
+
+option cc_enable_arenas = true;
+
+// Small message with basic field types - represents typical API request/response
+message SmallMessage {
+  int32 id = 1;
+  string name = 2;
+  bool active = 3;
+  int64 timestamp = 4;
+  double value = 5;
+}
+
+// Medium message with nested structures
+message MediumMessage {
+  int32 id = 1;
+  string name = 2;
+  repeated string tags = 3;
+
+  message Metadata {
+    string key = 1;
+    string value = 2;
+    int64 timestamp = 3;
+  }
+
+  repeated Metadata metadata = 4;
+  bytes payload = 5;
+
+  enum Status {
+    UNKNOWN = 0;
+    ACTIVE = 1;
+    INACTIVE = 2;
+    PENDING = 3;
+  }
+
+  Status status = 6;
+}
+
+// Large message with many fields and nested messages
+message LargeMessage {
+  int32 id = 1;
+  string name = 2;
+  string description = 3;
+  int64 created_at = 4;
+  int64 updated_at = 5;
+
+  message Author {
+    int32 id = 1;
+    string name = 2;
+    string email = 3;
+  }
+
+  Author author = 6;
+
+  repeated string tags = 7;
+
+  message Comment {
+    int32 id = 1;
+    string text = 2;
+    Author author = 3;
+    int64 timestamp = 4;
+  }
+
+  repeated Comment comments = 8;
+
+  map<string, string> attributes = 9;
+
+  bytes content = 10;
+
+  enum Priority {
+    LOW = 0;
+    MEDIUM = 1;
+    HIGH = 2;
+    CRITICAL = 3;
+  }
+
+  Priority priority = 11;
+
+  repeated int64 related_ids = 12;
+}
+
+// Deeply nested message for testing nested field access performance
+message DeeplyNestedMessage {
+  message Level1 {
+    message Level2 {
+      message Level3 {
+        message Level4 {
+          message Level5 {
+            int32 value = 1;
+            string data = 2;
+          }
+          Level5 nested = 1;
+          repeated int32 values = 2;
+        }
+        Level4 nested = 1;
+        string name = 2;
+      }
+      Level3 nested = 1;
+      int64 id = 2;
+    }
+    Level2 nested = 1;
+    bool flag = 2;
+  }
+  Level1 nested = 1;
+  int32 root_value = 2;
+}
+
+// Message with many repeated fields for testing array performance
+message RepeatedFieldsMessage {
+  repeated int32 int_values = 1;
+  repeated int64 long_values = 2;
+  repeated float float_values = 3;
+  repeated double double_values = 4;
+  repeated bool bool_values = 5;
+  repeated string string_values = 6;
+  repeated bytes bytes_values = 7;
+  repeated SmallMessage messages = 8;
+}

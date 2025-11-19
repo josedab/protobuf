@@ -27,6 +27,27 @@ package(default_applicable_licenses = ["//:license"])
 licenses(["notice"])
 
 proto_library(
+    name = "benchmark_messages_proto",
+    srcs = ["benchmark_messages.proto"],
+)
+
+cc_proto_library(
+    name = "benchmark_messages_cc_proto",
+    deps = [":benchmark_messages_proto"],
+)
+
+cc_test(
+    name = "benchmark_messages",
+    testonly = 1,
+    srcs = ["benchmark_messages.cc"],
+    deps = [
+        ":benchmark_messages_cc_proto",
+        "//src/google/protobuf",
+        "@google_benchmark//:benchmark_main",
+    ],
+)
+
+proto_library(
     name = "descriptor_proto",
     srcs = ["descriptor.proto"],
 )

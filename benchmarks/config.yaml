@@ -1,0 +1,204 @@
+# Benchmark configuration for Protocol Buffers
+# This file defines standard benchmark configurations for consistent
+# performance measurement across different environments.
+
+benchmarks:
+  cpp:
+    # Core message operation benchmarks
+    parse:
+      - name: BM_ParseSmallMessage
+        description: Parse a small message with basic field types
+        iterations: 10000
+        warmup: 100
+        threshold_percent: 5
+
+      - name: BM_ParseMediumMessage
+        description: Parse a medium message with nested structures
+        iterations: 5000
+        warmup: 50
+        threshold_percent: 5
+
+      - name: BM_ParseLargeMessage
+        description: Parse a large message with many fields
+        iterations: 1000
+        warmup: 10
+        threshold_percent: 5
+
+      - name: BM_ParseDeeplyNestedMessage
+        description: Parse a deeply nested message structure
+        iterations: 5000
+        warmup: 50
+        threshold_percent: 5
+
+    serialize:
+      - name: BM_SerializeSmallMessage
+        description: Serialize a small message with basic field types
+        iterations: 10000
+        warmup: 100
+        threshold_percent: 5
+
+      - name: BM_SerializeMediumMessage
+        description: Serialize a medium message with nested structures
+        iterations: 5000
+        warmup: 50
+        threshold_percent: 5
+
+      - name: BM_SerializeLargeMessage
+        description: Serialize a large message with many fields
+        iterations: 1000
+        warmup: 10
+        threshold_percent: 5
+
+    arena:
+      - name: BM_ParseSmallMessageArena
+        description: Parse small message using arena allocation
+        iterations: 10000
+        warmup: 100
+        threshold_percent: 5
+
+      - name: BM_ParseLargeMessageArena
+        description: Parse large message using arena allocation
+        iterations: 1000
+        warmup: 10
+        threshold_percent: 5
+
+    operations:
+      - name: BM_CopySmallMessage
+        description: Copy a small message
+        iterations: 10000
+        warmup: 100
+        threshold_percent: 5
+
+      - name: BM_CopyLargeMessage
+        description: Copy a large message
+        iterations: 1000
+        warmup: 10
+        threshold_percent: 5
+
+      - name: BM_MergeSmallMessage
+        description: Merge a small message
+        iterations: 10000
+        warmup: 100
+        threshold_percent: 5
+
+      - name: BM_MergeLargeMessage
+        description: Merge a large message
+        iterations: 1000
+        warmup: 10
+        threshold_percent: 5
+
+  java:
+    parse:
+      - name: SmallMessageBenchmark.parse
+        fork: 2
+        warmup_iterations: 3
+        measurement_iterations: 5
+        threshold_percent: 5
+
+      - name: LargeMessageBenchmark.parse
+        fork: 2
+        warmup_iterations: 3
+        measurement_iterations: 5
+        threshold_percent: 5
+
+    serialize:
+      - name: SmallMessageBenchmark.serialize
+        fork: 2
+        warmup_iterations: 3
+        measurement_iterations: 5
+        threshold_percent: 5
+
+      - name: LargeMessageBenchmark.serialize
+        fork: 2
+        warmup_iterations: 3
+        measurement_iterations: 5
+        threshold_percent: 5
+
+  python:
+    parse:
+      - name: test_parse_small_message
+        iterations: 1000
+        warmup: 10
+        threshold_percent: 10
+
+      - name: test_parse_large_message
+        iterations: 100
+        warmup: 5
+        threshold_percent: 10
+
+    serialize:
+      - name: test_serialize_small_message
+        iterations: 1000
+        warmup: 10
+        threshold_percent: 10
+
+      - name: test_serialize_large_message
+        iterations: 100
+        warmup: 5
+        threshold_percent: 10
+
+# Threshold configuration for regression detection
+thresholds:
+  # Alert if performance regresses by more than this percentage
+  regression_percent: 5
+
+  # Ignore variations below this percentage (noise threshold)
+  noise_percent: 2
+
+  # Number of consecutive failures before alert
+  consecutive_failures: 2
+
+# CI-specific settings
+ci:
+  # Maximum time for benchmark suite (minutes)
+  timeout_minutes: 30
+
+  # Number of repetitions for statistical significance
+  repetitions: 3
+
+  # Minimum time per benchmark (seconds)
+  min_time_seconds: 1
+
+  # Report aggregates only (mean, median, stddev)
+  report_aggregates_only: true
+
+# Alert configuration
+alerts:
+  # GitHub team to notify on regressions
+  notify_team: "@protobuf/performance"
+
+  # Slack webhook for notifications (configure in repository secrets)
+  slack_webhook_secret: "BENCHMARK_SLACK_WEBHOOK"
+
+  # Email notifications (configure in repository secrets)
+  email_recipients_secret: "BENCHMARK_EMAIL_RECIPIENTS"
+
+# Dashboard configuration
+dashboard:
+  # URL for the benchmark dashboard
+  url: "https://protocolbuffers.github.io/protobuf/dev/bench/"
+
+  # Number of days of history to display
+  history_days: 90
+
+  # Chart types to display
+  charts:
+    - type: line
+      title: "Parse Performance Trend"
+      benchmarks:
+        - BM_ParseSmallMessage
+        - BM_ParseLargeMessage
+
+    - type: line
+      title: "Serialize Performance Trend"
+      benchmarks:
+        - BM_SerializeSmallMessage
+        - BM_SerializeLargeMessage
+
+    - type: bar
+      title: "Current Performance Comparison"
+      benchmarks:
+        - BM_ParseSmallMessage
+        - BM_ParseLargeMessage
+        - BM_SerializeSmallMessage
+        - BM_SerializeLargeMessage

@@ -1,0 +1,131 @@
+name: Deploy Benchmark Dashboard
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'dev/bench/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build Dashboard
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          fetch-depth: 0
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Create dashboard index
+        run: |
+          mkdir -p _site/dev/bench
+
+          # Create main index page
+          cat > _site/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html>
+          <head>
+              <title>Protocol Buffers Benchmarks</title>
+              <meta charset="utf-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1">
+              <style>
+                  body {
+                      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+                      max-width: 1200px;
+                      margin: 0 auto;
+                      padding: 20px;
+                      background: #f5f5f5;
+                  }
+                  h1 {
+                      color: #333;
+                      border-bottom: 2px solid #4285f4;
+                      padding-bottom: 10px;
+                  }
+                  .card {
+                      background: white;
+                      border-radius: 8px;
+                      padding: 20px;
+                      margin: 20px 0;
+                      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                  }
+                  a {
+                      color: #4285f4;
+                      text-decoration: none;
+                  }
+                  a:hover {
+                      text-decoration: underline;
+                  }
+                  .metric {
+                      display: inline-block;
+                      padding: 5px 10px;
+                      margin: 5px;
+                      background: #e8f0fe;
+                      border-radius: 4px;
+                  }
+              </style>
+          </head>
+          <body>
+              <h1>Protocol Buffers Performance Benchmarks</h1>
+
+              <div class="card">
+                  <h2>Benchmark Dashboard</h2>
+                  <p>View performance trends and regression detection results.</p>
+                  <p><a href="dev/bench/index.html">View Dashboard</a></p>
+              </div>
+
+              <div class="card">
+                  <h2>Key Metrics</h2>
+                  <p>Core operations benchmarked:</p>
+                  <span class="metric">Parse Small Message</span>
+                  <span class="metric">Parse Large Message</span>
+                  <span class="metric">Serialize Small Message</span>
+                  <span class="metric">Serialize Large Message</span>
+                  <span class="metric">Arena Allocation</span>
+                  <span class="metric">Copy/Merge Operations</span>
+              </div>
+
+              <div class="card">
+                  <h2>About</h2>
+                  <p>These benchmarks run automatically on every PR and push to main.</p>
+                  <p>Regressions greater than 5% trigger alerts and may block PRs.</p>
+                  <p>For more information, see the <a href="https://github.com/protocolbuffers/protobuf">protobuf repository</a>.</p>
+              </div>
+          </body>
+          </html>
+          EOF
+
+          # Copy benchmark data if it exists
+          if [ -d "dev/bench" ]; then
+            cp -r dev/bench/* _site/dev/bench/
+          fi
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    name: Deploy Dashboard
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
